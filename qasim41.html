@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامج إدارة رصد درجات الطلاب والنتائج المدرسية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            
+            @page { 
+                size: A4 portrait; 
+                margin: 4mm !important; 
+            }
+
+            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed !important; }
+            tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+            thead { display: table-header-group !important; }
+            tfoot { display: table-footer-group !important; }
+
+            /* طباعة نتيجتين عمودياً بملء ورقة A4 مع مسافة فاصلة أكبر للقص وضبط المساحات */
+            .print-card { 
+                break-inside: avoid !important; 
+                page-break-inside: avoid !important; 
+                height: 134mm !important; 
+                max-height: 134mm !important;
+                width: 100% !important;
+                margin: 0 auto 8mm auto !important; 
+                padding: 1.5mm 3mm 1mm 3mm !important;
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                box-sizing: border-box !important;
+            }
+
+            /* فرض الانتقال لصفحة جديدة بعد كل بطاقتين تماماً */
+            .print-card:nth-child(even) {
+                break-after: page !important;
+                page-break-after: always !important;
+                margin-bottom: 0 !important;
+            }
+
+            #reportsContainer {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            th, td { border: 1.5px solid #000 !important; padding: 3px 0.5px !important; text-align: center !important; overflow: hidden !important; word-break: break-all !important; }
+            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10.5px !important; }
+            
+            .header-input { display: none !important; }
+            .print-header-text { display: block !important; font-weight: bold !important; font-size: 11px !important; color: #000 !important; text-align: center !important; }
+            
+            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 12px !important; font-weight: bold !important; width: 100% !important; resize: none !important; overflow: hidden !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+        }
+        .print-header-text { display: none; }
+        .header-input {
+            width: 100%;
+            background-color: transparent;
+            text-align: center;
+            font-weight: bold;
+            resize: none;
+            outline: none;
+            overflow: hidden;
+            line-height: 1.3;
+            padding: 4px 2px;
+            margin: 0;
+            transition: background-color 0.2s;
+        }
+        .header-input:focus {
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: inset 0 0 0 1px #6366f1;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- رأس البرنامج -->
+        <header class="bg-indigo-900 text-white rounded-2xl p-4 md:p-6 mb-6 shadow-md flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold">برنامج رصد ونتائج الطلاب (السحابي المتكامل)</h1>
+                <p class="text-indigo-200 text-xs md:text-sm mt-1">تصميم وإعداد المدرس المساعد: قاسم ناظم موسى الابراهيمي</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-1 bg-indigo-800 px-3 py-1.5 rounded-xl border border-indigo-700">
+                    <label class="text-xs text-indigo-200 font-bold">العام الدراسي:</label>
+                    <select id="globalAcademicYear" class="bg-indigo-950 text-white text-xs font-bold px-2 py-1 rounded-lg outline-none border border-indigo-600">
+                        <option value="٢٠٢٦ - ٢٠٢٧" selected>٢٠٢٦ - ٢٠٢٧</option>
+                        <option value="٢٠٢٧ - ٢٠٢٨">٢٠٢٧ - ٢٠٢٨</option>
+                        <option value="٢٠٢٨ - ٢٠٢٩">٢٠٢٨ - ٢٠٢٩</option>
+                        <option value="٢٠٢٩ - ٢٠٣٠">٢٠٢٩ - ٢٠٣٠</option>
+                        <option value="٢٠٣٠ - ٢٠٣١">٢٠٣٠ - ٢٠٣١</option>
+                        <option value="٢٠٣١ - ٢٠٣٢">٢٠٣١ - ٢٠٣٢</option>
+                    </select>
+                </div>
+
+                <span id="syncStatus" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold">جاهز للعمل ✨</span>
+                <div class="flex gap-2">
+                    <button onclick="switchTab('entry')" id="btn-entry" class="bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition">إدخال الدرجات</button>
+                    <button onclick="switchTab('report')" id="btn-report" class="bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition opacity-70">نتيجة الطالب الشاملة</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- قسم إدخال الدرجات والمواد -->
+        <section id="tab-entry" class="space-y-6">
+            <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm no-print flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">اختر المادة الدراسية:</label>
+                        <select id="subjectSelect" onchange="loadSubjectData()" class="border rounded-xl px-3 py-2 bg-slate-50 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="التربية الإسلامية">التربية الإسلامية</option>
+                            <option value="اللغة العربية">اللغة العربية</option>
+                            <option value="اللغة الانكليزية">اللغة الانكليزية</option>
+                            <option value="الرياضيات الحديثة">الرياضيات الحديثة</option>
+                            <option value="الاجتماعيات">الاجتماعيات</option>
+                            <option value="العلوم والتربية الصحية" selected>العلوم والتربية الصحية</option>
+                            <option value="التربية الرياضية">التربية الرياضية</option>
+                            <option value="التربية الفنية والنشيد">التربية الفنية والنشيد</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">الصف والشعبة:</label>
+                        <select id="classSectionSelect" onchange="loadSubjectData()" class="border rounded-xl px-3 py-2 bg-slate-50 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="الخامس الابتدائي - أ" selected>الخامس الابتدائي - أ</option>
+                            <option value="الخامس الابتدائي - ب">الخامس الابتدائي - ب</option>
+                            <option value="السادس الابتدائي - أ">السادس الابتدائي - أ</option>
+                            <option value="السادس الابتدائي - ب">السادس الابتدائي - ب</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition flex items-center gap-1">🖨️ طباعة السجل</button>
+                    <button onclick="openImportModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition flex items-center gap-1">📥 استيراد وإضافة بيانات</button>
+                    <button onclick="addNewStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">➕ إضافة طالب</button>
+                    <button onclick="deleteSelectedStudents()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition flex items-center gap-1">🗑️ حذف المحدد</button>
+                    <button onclick="saveDataToCloud()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">💾 حفظ في السحابة ☁️</button>
+                </div>
+            </div>
+
+            <!-- سجل الدرجات -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-slate-400 pb-6">
+                <div class="p-4 bg-indigo-50 border-b border-indigo-200 flex justify-between items-center">
+                    <h3 id="currentSubjectTitle" class="font-bold text-indigo-900 text-sm md:text-base">سجل درجات المادة</h3>
+                    <span class="text-xs text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200">العمل الفوري السريع</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center border-collapse text-xs md:text-sm border border-slate-400" id="subjectTable">
+                        <thead>
+                            <tr class="bg-slate-200 text-slate-900 border-b border-slate-400 align-middle">
+                                <th rowspan="2" class="p-2 border-r border-slate-400 w-10 no-print">
+                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                </th>
+                                <th rowspan="2" class="p-0 border-r border-slate-400 w-10 hover:bg-slate-300 transition-colors align-middle">
+                                    <textarea id="head_col_no" oninput="updateHeader('col_no', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت</textarea>
+                                    <span class="print-header-text">ت</span>
+                                </th>
+                                <th rowspan="2" class="p-0 border-r border-slate-400 min-w-[200px] hover:bg-slate-300 transition-colors align-middle text-right">
+                                    <textarea id="head_col_name" oninput="updateHeader('col_name', this.value)" class="header-input h-10 text-[10px] md:text-xs text-right pr-2">اسم الطالب</textarea>
+                                    <span class="print-header-text">اسم الطالب</span>
+                                </th>
+                                <th colspan="4" class="p-0 border-r border-slate-400 bg-blue-100 hover:bg-blue-200 transition-colors">
+                                    <textarea id="head_top_1" oninput="updateHeader('top_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الأول</textarea>
+                                    <span class="print-header-text">النصف الأول</span>
+                                </th>
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-amber-100 w-16 hover:bg-amber-200 transition-colors align-middle">
+                                    <textarea id="head_top_2" oninput="updateHeader('top_2', this.value)" class="header-input h-20 text-[10px] md:text-xs">نصف السنة</textarea>
+                                    <span class="print-header-text">نصف السنة</span>
+                                </th>
+                                <th colspan="4" class="p-0 border-r border-slate-400 bg-emerald-100 hover:bg-emerald-200 transition-colors">
+                                    <textarea id="head_top_3" oninput="updateHeader('top_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الثاني</textarea>
+                                    <span class="print-header-text">النصف الثاني</span>
+                                </th>
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-purple-100 w-16 hover:bg-purple-200 transition-colors align-middle">
+                                    <textarea id="head_top_4" oninput="updateHeader('top_4', this.value)" class="header-input h-20 text-[10px] md:text-xs">المعدل السنوي</textarea>
+                                    <span class="print-header-text">المعدل السنوي</span>
+                                </th>
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-rose-100 w-16 hover:bg-rose-200 transition-colors align-middle">
+                                    <textarea id="head_top_5" oninput="updateHeader('top_5', this.value)" class="header-input h-20 text-[10px] md:text-xs">الامتحان النهائي</textarea>
+                                    <span class="print-header-text">الامتحان النهائي</span>
+                                </th>
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-indigo-100 w-20 hover:bg-indigo-200 transition-colors align-middle">
+                                    <textarea id="head_top_6" oninput="updateHeader('top_6', this.value)" class="header-input h-20 text-indigo-950 text-[10px] md:text-xs">الدرجة النهائية</textarea>
+                                    <span class="print-header-text">الدرجة النهائية</span>
+                                </th>
+                                <th rowspan="2" class="p-2 no-print w-12">حذف</th>
+                            </tr>
+                            <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 align-middle">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 w-12 hover:bg-blue-100 transition-colors">
+                                    <textarea id="head_bot_1" oninput="updateHeader('bot_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ١</textarea>
+                                    <span class="print-header-text">ت ١</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 w-12 hover:bg-blue-100 transition-colors">
+                                    <textarea id="head_bot_2" oninput="updateHeader('bot_2', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ٢</textarea>
+                                    <span class="print-header-text">ت ٢</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 w-12 hover:bg-blue-100 transition-colors">
+                                    <textarea id="head_bot_3" oninput="updateHeader('bot_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">ك ١</textarea>
+                                    <span class="print-header-text">ك ١</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-blue-200 w-14 hover:bg-blue-300 transition-colors">
+                                    <textarea id="head_bot_4" oninput="updateHeader('bot_4', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea>
+                                    <span class="print-header-text">المعدل</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 w-12 hover:bg-emerald-100 transition-colors">
+                                    <textarea id="head_bot_5" oninput="updateHeader('bot_5', this.value)" class="header-input h-10 text-[10px] md:text-xs">آذار</textarea>
+                                    <span class="print-header-text">آذار</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 w-12 hover:bg-emerald-100 transition-colors">
+                                    <textarea id="head_bot_6" oninput="updateHeader('bot_6', this.value)" class="header-input h-10 text-[10px] md:text-xs">نيسان</textarea>
+                                    <span class="print-header-text">نيسان</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 w-12 hover:bg-emerald-100 transition-colors">
+                                    <textarea id="head_bot_7" oninput="updateHeader('bot_7', this.value)" class="header-input h-10 text-[10px] md:text-xs">أيار</textarea>
+                                    <span class="print-header-text">أيار</span>
+                                </th>
+                                <th class="p-0 border-r border-slate-400 bg-emerald-200 w-14 hover:bg-emerald-300 transition-colors">
+                                    <textarea id="head_bot_8" oninput="updateHeader('bot_8', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea>
+                                    <span class="print-header-text">المعدل</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                        <tfoot id="tableFooter" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-400 text-[10px] md:text-xs"></tfoot>
+                    </table>
+                </div>
+
+                <!-- توقيع المعلم والمدير في السجل -->
+                <div class="flex justify-between items-end mt-6 px-4 md:px-12 font-bold text-slate-800 text-xs md:text-sm">
+                    <div class="text-center">
+                        <p class="mb-1 text-slate-600 text-[11px] md:text-xs">توقيع مدير المدرسة</p>
+                        <input type="text" id="principalNameEntry" value="علي نجم عبد الامير" oninput="updatePrincipalName(this.value)" class="text-center font-black text-slate-900 bg-transparent border-b-2 border-slate-300 focus:border-indigo-500 outline-none w-32 md:w-48 pb-1 placeholder-slate-400">
+                    </div>
+                    <div class="text-center">
+                        <p class="mb-1 text-slate-600 text-[11px] md:text-xs">توقيع معلم المادة</p>
+                        <input type="text" id="teacherNameEntry" value="قاسم ناظم موسى" oninput="updateTeacherName(this.value)" class="text-center font-black text-slate-900 bg-transparent border-b-2 border-slate-300 focus:border-indigo-500 outline-none w-32 md:w-48 pb-1 placeholder-slate-400">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم النتيجة الشاملة -->
+        <section id="tab-report" class="space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-6 shadow-sm no-print flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-4 items-center w-full md:w-3/4">
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اختر وضع العرض:</label>
+                        <select id="reportPrintMode" onchange="toggleReportMode()" class="w-full border rounded-xl px-3 py-2 bg-slate-50 font-medium outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="single">طالب واحد محدد</option>
+                            <option value="class">صف كامل (دفعة واحدة)</option>
+                            <option value="range">نطاق محدد من الطلاب</option>
+                        </select>
+                    </div>
+
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اختر الصف والشعبة:</label>
+                        <select id="reportClassFilter" onchange="onReportClassChanged()" class="w-full border rounded-xl px-3 py-2 bg-slate-50 font-medium outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="الخامس الابتدائي - أ" selected>الخامس الابتدائي - أ</option>
+                            <option value="الخامس الابتدائي - ب">الخامس الابتدائي - ب</option>
+                            <option value="السادس الابتدائي - أ">السادس الابتدائي - أ</option>
+                            <option value="السادس الابتدائي - ب">السادس الابتدائي - ب</option>
+                        </select>
+                    </div>
+
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">المديرية:</label>
+                        <input type="text" id="directorateInput" value="المديرية العامة للتربية في محافظة النجف الاشرف" oninput="updateDirectorate(this.value)" class="w-full border rounded-xl px-2 py-2 bg-slate-50 font-bold text-indigo-900 outline-none focus:ring-2 focus:ring-indigo-500 text-xs text-center">
+                    </div>
+
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم المدرسة:</label>
+                        <input type="text" id="schoolNameInput" value="مدرسة غرناطة الابتدائية" oninput="updateSchoolName(this.value)" class="w-full border rounded-xl px-2 py-2 bg-slate-50 font-bold text-indigo-900 outline-none focus:ring-2 focus:ring-indigo-500 text-xs text-center">
+                    </div>
+
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">مرشد الصف:</label>
+                        <input type="text" id="classGuideInput" value="قاسم ناظم موسى" oninput="updateClassGuide(this.value)" class="w-full border rounded-xl px-2 py-2 bg-indigo-50 font-bold text-indigo-900 outline-none focus:ring-2 focus:ring-indigo-500 text-xs text-center">
+                    </div>
+
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">حد مواد الإكمال:</label>
+                        <select id="maxFailureAllowed" onchange="generateStudentReport()" class="w-full border rounded-xl px-2 py-2 bg-amber-50 font-bold text-amber-900 outline-none focus:ring-2 focus:ring-amber-500 text-xs">
+                            <option value="2" selected>مادتين</option>
+                            <option value="3">3 مواد</option>
+                            <option value="4">4 مواد</option>
+                            <option value="1">مادة واحدة</option>
+                        </select>
+                    </div>
+
+                    <div class="w-full md:w-1/6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">درجات القرار:</label>
+                        <select id="decisionGraceMode" onchange="generateStudentReport()" class="w-full border rounded-xl px-2 py-2 bg-emerald-50 font-bold text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-500 text-xs">
+                            <option value="enabled" selected>مفعل (5 درجات)</option>
+                            <option value="disabled">معطل</option>
+                        </select>
+                    </div>
+
+                    <div id="singleStudentDiv" class="w-full md:w-1/5">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اختر الطالب:</label>
+                        <select id="studentSelectReport" onchange="generateStudentReport()" class="w-full border rounded-xl px-2 py-2 bg-slate-50 font-medium outline-none focus:ring-2 focus:ring-indigo-500 text-sm"></select>
+                    </div>
+
+                    <div id="rangeSelectDiv" class="w-full md:w-1/5 hidden flex gap-2 items-center">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">من تسلسل:</label>
+                            <input type="number" id="rangeStart" value="1" min="1" oninput="generateStudentReport()" class="w-20 border rounded-xl px-2 py-2 text-center text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">إلى تسلسل:</label>
+                            <input type="number" id="rangeEnd" value="2" min="1" oninput="generateStudentReport()" class="w-20 border rounded-xl px-2 py-2 text-center text-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-3 w-full md:w-auto">
+                    <button onclick="window.print()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-medium shadow transition flex items-center justify-center gap-2 text-sm">
+                        🖨️ طباعة النتائج الشاملة
+                    </button>
+                </div>
+            </div>
+
+            <!-- حاوية تقارير النتائج الشاملة -->
+            <div id="reportsContainer" class="space-y-4"></div>
+        </section>
+    </div>
+
+    <!-- نافذة الاستيراد (Modal) -->
+    <div id="importModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-indigo-900">استيراد وإضافة بيانات الطلاب</h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+            </div>
+            
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">الصف المستهدف:</label>
+                    <input type="text" id="importTargetClass" readonly class="w-full bg-slate-100 border rounded-xl px-3 py-2 font-bold text-indigo-900">
+                </div>
+
+                <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 space-y-2">
+                    <p class="font-bold text-indigo-900 text-xs">طرق الإدخال السريع:</p>
+                    <div class="flex gap-2 flex-wrap">
+                        <label class="bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-800 px-3 py-2 rounded-xl cursor-pointer text-xs font-semibold flex items-center gap-1 shadow-sm">
+                            📁 رفع من ملف أو كاميرا / صورة
+                            <input type="file" id="fileInput" accept="image/*,.txt,.csv" class="hidden" onchange="handleFileUpload(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">لصق نص (أسماء أو من جدول Excel / Word):</label>
+                    <textarea id="importTextarea" rows="5" placeholder="أحمد محمد علي&#10;حسين كريم حسن&#10;علي رضا كاظم" class="w-full border rounded-xl p-3 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">يدعم النسخ واللصق المباشر من جدول Excel أو Word (كل طالب في سطر مستقل).</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeImportModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-xl font-medium text-sm transition">إلغاء</button>
+                <button onclick="processImportData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-medium text-sm transition">إدراج الطلاب إلى السجل</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Modular v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPdgKqGw3Die0irgiOLQ3pnHSz21C_S6o",
+            authDomain: "school-grades-system-59f7c.firebaseapp.com",
+            projectId: "school-grades-system-59f7c",
+            storageBucket: "school-grades-system-59f7c.firebasestorage.app",
+            messagingSenderId: "439863496271",
+            appId: "1:439863496271:web:4ee836a1923ecb891d243a",
+            measurementId: "G-W80R5HNE3P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const subjects = [
+            'التربية الإسلامية', 'اللغة العربية', 'اللغة الانكليزية', 
+            'الرياضيات الحديثة', 'الاجتماعيات', 'العلوم والتربية الصحية', 'التربية الرياضية', 'التربية الفنية والنشيد'
+        ];
+
+        let customHeaders = {
+            col_no: 'ت', col_name: 'اسم الطالب', rep_sub: 'الدروس', rep_note: 'الملاحظات',
+            top_1: 'النصف الاول', top_2: 'نصف السنة', top_3: 'النصف الثاني',
+            top_4: 'المعدل السنوي', top_5: 'الامتحان النهائي', top_6: 'الدرجة النهائية',
+            bot_1: 'ت ١', bot_2: 'ت ٢', bot_3: 'ك ١', bot_4: 'المعدل',
+            bot_5: 'آذار', bot_6: 'نيسان', bot_7: 'أيار', bot_8: 'المعدل'
+        };
+
+        let globalPrincipalName = 'علي نجم عبد الامير';
+        let globalSchoolName = 'مدرسة غرناطة الابتدائية';
+        let globalDirectorate = 'المديرية العامة للتربية في محافظة النجف الاشرف';
+        let teachersMap = {};
+        subjects.forEach(sub => { teachersMap[sub] = 'قاسم ناظم موسى'; });
+
+        let classGuidesMap = {
+            "الخامس الابتدائي - أ": "قاسم ناظم موسى",
+            "الخامس الابتدائي - ب": "قاسم ناظم موسى",
+            "السادس الابتدائي - أ": "قاسم ناظم موسى",
+            "السادس الابتدائي - ب": "قاسم ناظم موسى"
+        };
+
+        function toArabicDigits(num) {
+            if (num === undefined || num === null || isNaN(num) || num === '') return '٠';
+            const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return String(num).replace(/\d/g, (digit) => arabicNumbers[digit]);
+        }
+
+        let defaultStudentsClassA = [
+            "احمد حيدر إسماعيل", "اخلاص احمد منصور", "اسماء ابراهيم موزان", "امنة داود سلمان",
+            "امیر حسین موسی", "امیر مصطفى فاضل", "اميرة فاضل جاسم", "اية محمد ابراهيم",
+            "إيمان علي محمد", "أيمن سلمان داود", "إبراهيم رضا حمزة", "إسحاق ناصر جاسم",
+            "بتول سلمان شاكر", "بنين ماجد احميد", "جعفر ضياء سالم", "حسن كامل زغير",
+            "حسن محمد نعمة", "حسن مرتضی سالم", "ختام باسم فاضل", "دعاء حسن هادي",
+            "رضا حسن كريم", "رقية احمد عبد العباس", "رقية حسين كريم", "رقية محمد حمزة",
+            "رقية ميثم طالب", "زهراء مخلص محسن", "زهراء هاني طالب", "زيد جواد كاظم",
+            "زيد محمد حمزه", "زينب عباس عبد الكريم", "زينب فارس جاسم", "زينب قاسم جاسم",
+            "زينب مشتاق حسین", "سجاد حسين كريم"
+        ];
+
+        let classStudentsMap = {
+            "الخامس الابتدائي - أ": [...defaultStudentsClassA],
+            "الخامس الابتدائي - ب": [],
+            "السادس الابتدائي - أ": [],
+            "السادس الابتدائي - ب": []
+        };
+
+        let schoolDb = { grades: {} };
+        subjects.forEach(sub => { schoolDb.grades[sub] = {}; });
+
+        window.switchTab = async function(tab) {
+            if(tab === 'entry') {
+                document.getElementById('tab-entry').classList.remove('hidden');
+                document.getElementById('tab-report').classList.add('hidden');
+                document.getElementById('btn-entry').className = "bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition";
+                document.getElementById('btn-report').className = "bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition opacity-70";
+                loadSubjectData();
+            } else {
+                document.getElementById('tab-entry').classList.add('hidden');
+                document.getElementById('tab-report').classList.remove('hidden');
+                document.getElementById('btn-report').className = "bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition";
+                document.getElementById('btn-entry').className = "bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition opacity-70";
+                
+                await fetchAllSubjectsDataBackground();
+                updateReportStudentsList();
+            }
+        }
+
+        function schoolRound(val) { return Math.round(val); }
+
+        window.updateHeader = function(key, value) {
+            customHeaders[key] = value;
+            document.querySelectorAll(`textarea[id="head_${key}"]`).forEach(ta => {
+                const span = ta.parentElement.querySelector('.print-header-text');
+                if(span) span.innerText = value;
+            });
+        }
+
+        window.updatePrincipalName = function(val) {
+            globalPrincipalName = val;
+            if(!document.getElementById('tab-report').classList.contains('hidden')) {
+                generateStudentReport();
+            }
+        }
+
+        window.updateSchoolName = function(val) {
+            globalSchoolName = val;
+            if(!document.getElementById('tab-report').classList.contains('hidden')) {
+                generateStudentReport();
+            }
+        }
+
+        window.updateDirectorate = function(val) {
+            globalDirectorate = val;
+            if(!document.getElementById('tab-report').classList.contains('hidden')) {
+                generateStudentReport();
+            }
+        }
+
+        window.updateTeacherName = function(val) {
+            const currentSub = document.getElementById('subjectSelect').value;
+            teachersMap[currentSub] = val;
+            if(!document.getElementById('tab-report').classList.contains('hidden')) {
+                generateStudentReport();
+            }
+        }
+
+        window.updateClassGuide = function(val) {
+            const currentClass = document.getElementById('reportClassFilter').value;
+            classGuidesMap[currentClass] = val;
+            if(!document.getElementById('tab-report').classList.contains('hidden')) {
+                generateStudentReport();
+            }
+        }
+
+        window.onReportClassChanged = function() {
+            const currentClass = document.getElementById('reportClassFilter').value;
+            document.getElementById('classGuideInput').value = classGuidesMap[currentClass] || 'قاسم ناظم موسى';
+            updateReportStudentsList();
+        }
+
+        window.loadSubjectData = function() {
+            const currentSub = document.getElementById('subjectSelect').value;
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const academicYear = document.getElementById('globalAcademicYear').value;
+            
+            document.getElementById('currentSubjectTitle').innerText = `سجل درجات مادة: ${currentSub} (${currentClass}) - العام الدراسي: ${academicYear}`;
+            
+            document.getElementById('teacherNameEntry').value = teachersMap[currentSub] || 'قاسم ناظم موسى';
+            document.getElementById('principalNameEntry').value = globalPrincipalName;
+            
+            renderTable();
+            fetchFromCloudBackground(currentSub, currentClass, academicYear);
+        }
+
+        async function fetchFromCloudBackground(currentSub, currentClass, academicYear) {
+            const statusEl = document.getElementById('syncStatus');
+            try {
+                const cleanYear = academicYear.replace(/\s/g, '');
+                
+                const headersRef = doc(db, "school_system_v12", "global_headers_" + cleanYear);
+                const headersSnap = await getDoc(headersRef);
+                if (headersSnap.exists() && headersSnap.data().headers) {
+                    customHeaders = { ...customHeaders, ...headersSnap.data().headers };
+                    for (let key in customHeaders) {
+                        let el = document.getElementById('head_' + key);
+                        if (el) {
+                            el.value = customHeaders[key];
+                            const span = el.parentElement.querySelector('.print-header-text');
+                            if(span) span.innerText = customHeaders[key];
+                        }
+                    }
+                }
+
+                const docId = currentClass.replace(/[\s-]/g, '_') + "_" + currentSub.replace(/[\s-]/g, '_') + "_" + cleanYear;
+                const docRef = doc(db, "school_system_v12", docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.students) {
+                        classStudentsMap[currentClass] = data.students;
+                    }
+                    if(data.grades) {
+                        schoolDb.grades[currentSub] = data.grades;
+                    }
+                    if(data.schoolInfo) {
+                        if(data.schoolInfo.principal) {
+                            globalPrincipalName = data.schoolInfo.principal;
+                            document.getElementById('principalNameEntry').value = globalPrincipalName;
+                        }
+                        if(data.schoolInfo.schoolName) {
+                            globalSchoolName = data.schoolInfo.schoolName;
+                            document.getElementById('schoolNameInput').value = globalSchoolName;
+                        }
+                        if(data.schoolInfo.directorate) {
+                            globalDirectorate = data.schoolInfo.directorate;
+                            document.getElementById('directorateInput').value = globalDirectorate;
+                        }
+                        if(data.schoolInfo.teacher) {
+                            teachersMap[currentSub] = data.schoolInfo.teacher;
+                            document.getElementById('teacherNameEntry').value = teachersMap[currentSub];
+                        }
+                        if(data.schoolInfo.classGuide) {
+                            classGuidesMap[currentClass] = data.schoolInfo.classGuide;
+                            document.getElementById('classGuideInput').value = classGuidesMap[currentClass];
+                        }
+                    }
+
+                    renderTable();
+                    statusEl.innerText = "متصل بالسحابة ☁️";
+                    statusEl.className = "text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold";
+                } else {
+                    statusEl.innerText = "جاهز محلياً ✨";
+                    statusEl.className = "text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-semibold";
+                }
+            } catch(e) {
+                console.warn("العمل بالوضع المحلي السريع:", e);
+                statusEl.innerText = "جاهز محلياً ✨";
+                statusEl.className = "text-xs bg-purple-600 text-white px-3 py-1 rounded-full font-semibold";
+            }
+        }
+
+        async function fetchAllSubjectsDataBackground() {
+            const currentClass = document.getElementById('reportClassFilter').value;
+            const academicYear = document.getElementById('globalAcademicYear').value;
+            const cleanYear = academicYear.replace(/\s/g, '');
+
+            try {
+                const headersRef = doc(db, "school_system_v12", "global_headers_" + cleanYear);
+                const headersSnap = await getDoc(headersRef);
+                if (headersSnap.exists() && headersSnap.data().headers) {
+                    customHeaders = { ...customHeaders, ...headersSnap.data().headers };
+                }
+            } catch(e) { console.error("Error fetching global headers", e); }
+
+            for (let sub of subjects) {
+                try {
+                    const docId = currentClass.replace(/[\s-]/g, '_') + "_" + sub.replace(/[\s-]/g, '_') + "_" + cleanYear;
+                    const docRef = doc(db, "school_system_v12", docId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if(data.students) {
+                            classStudentsMap[currentClass] = data.students;
+                        }
+                        if(data.grades) schoolDb.grades[sub] = data.grades;
+                        if(data.schoolInfo) {
+                            if(data.schoolInfo.principal) globalPrincipalName = data.schoolInfo.principal;
+                            if(data.schoolInfo.schoolName) globalSchoolName = data.schoolInfo.schoolName;
+                            if(data.schoolInfo.directorate) globalDirectorate = data.schoolInfo.directorate;
+                            if(data.schoolInfo.teacher) teachersMap[sub] = data.schoolInfo.teacher;
+                            if(data.schoolInfo.classGuide) classGuidesMap[currentClass] = data.schoolInfo.classGuide;
+                        }
+                    }
+                } catch(e) {
+                    console.error(`خطأ في جلب بيانات مادة ${sub}:`, e);
+                }
+            }
+            document.getElementById('classGuideInput').value = classGuidesMap[currentClass] || 'قاسم ناظم موسى';
+            document.getElementById('schoolNameInput').value = globalSchoolName;
+            document.getElementById('directorateInput').value = globalDirectorate;
+        }
+
+        window.updateFooterStats = function(currentSub, currentClass) {
+            const tfoot = document.getElementById('tableFooter');
+            const studentsInClass = classStudentsMap[currentClass] || [];
+            
+            if (studentsInClass.length === 0) {
+                tfoot.innerHTML = '';
+                return;
+            }
+
+            let totalCount = studentsInClass.length;
+            let columnStats = Array(12).fill().map(() => ({ passed: 0, failed: 0 }));
+
+            studentsInClass.forEach(student => {
+                const g = (schoolDb.grades[currentSub] && schoolDb.grades[currentSub][student]) ? schoolDb.grades[currentSub][student] : [0,0,0,0,0,0,0,0];
+                
+                const m1 = schoolRound((g[0] + g[1] + g[2]) / 3);
+                const m2 = schoolRound((g[4] + g[5] + g[6]) / 3);
+                const hasTerm1 = (g[0] > 0 || g[1] > 0 || g[2] > 0);
+                const hasTerm2 = (g[4] > 0 || g[5] > 0 || g[6] > 0);
+                
+                let annual = 0, finalGrade = 0;
+                if (hasTerm1 && hasTerm2 && g[3] > 0) {
+                    annual = schoolRound((m1 + m2 + g[3]) / 3);
+                    if (g[7] > 0) {
+                        finalGrade = schoolRound((annual + g[7]) / 2);
+                    }
+                }
+
+                const columnValues = [
+                    g[0], g[1], g[2], m1,
+                    g[3],
+                    g[4], g[5], g[6], m2,
+                    annual, g[7], finalGrade
+                ];
+
+                columnValues.forEach((val, colIndex) => {
+                    if (val >= 50) {
+                        columnStats[colIndex].passed++;
+                    } else {
+                        columnStats[colIndex].failed++;
+                    }
+                });
+            });
+
+            const statLabels = [
+                { title: 'العدد الكلي', key: 'total', bg: 'bg-indigo-50/80', text: 'text-indigo-900' },
+                { title: 'الناجحون', key: 'passed', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+                { title: 'الراسبون', key: 'failed', bg: 'bg-rose-50', text: 'text-rose-600' },
+                { title: 'نسبة النجاح', key: 'rate', bg: 'bg-slate-100', text: 'text-slate-800' }
+            ];
+
+            let tfootHtml = '';
+            statLabels.forEach(label => {
+                tfootHtml += `<tr class="${label.bg} ${label.text} border-t border-slate-400 font-bold text-center">`;
+                tfootHtml += `<td class="p-1.5 border-r border-slate-400 no-print"></td>`;
+                tfootHtml += `<td colspan="2" class="p-1.5 border-r border-slate-400 text-right font-black">${label.title}</td>`;
+                
+                columnStats.forEach(stat => {
+                    let displayValue = '';
+                    if (label.key === 'total') displayValue = toArabicDigits(totalCount);
+                    if (label.key === 'passed') displayValue = toArabicDigits(stat.passed);
+                    if (label.key === 'failed') displayValue = toArabicDigits(stat.failed);
+                    if (label.key === 'rate') {
+                        const rate = totalCount > 0 ? ((stat.passed / totalCount) * 100).toFixed(0) : 0;
+                        displayValue = toArabicDigits(rate) + '٪';
+                    }
+                    tfootHtml += `<td class="p-1.5 border-r border-slate-400">${displayValue}</td>`;
+                });
+                
+                tfootHtml += `<td class="p-1.5 no-print"></td>`;
+                tfootHtml += `</tr>`;
+            });
+
+            tfoot.innerHTML = tfootHtml;
+        }
+
+        window.renderTable = function() {
+            const currentSub = document.getElementById('subjectSelect').value;
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const tbody = document.getElementById('tableBody');
+            
+            tbody.innerHTML = '';
+
+            const studentsInClass = classStudentsMap[currentClass] || [];
+
+            if (studentsInClass.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="16" class="p-6 text-slate-400 font-bold">لا توجد أسماء طلاب مسجلة في هذا الصف. يمكنك استخدام زر "استيراد وإضافة بيانات" لإضافة الطلاب.</td></tr>`;
+                document.getElementById('tableFooter').innerHTML = '';
+                return;
+            }
+
+            studentsInClass.forEach((student, index) => {
+                if (!schoolDb.grades[currentSub]) schoolDb.grades[currentSub] = {};
+                if (!schoolDb.grades[currentSub][student]) {
+                    schoolDb.grades[currentSub][student] = [0,0,0,0,0,0,0,0];
+                }
+                const g = schoolDb.grades[currentSub][student];
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 border-b border-r border-slate-400 no-print text-center">
+                        <input type="checkbox" class="student-checkbox w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500" value="${student}">
+                    </td>
+                    <td class="p-2 border-b border-r border-slate-400 font-bold">${toArabicDigits(index + 1)}</td>
+                    <td class="p-2 border-b border-r border-slate-400 text-right"><input type="text" value="${student}" onchange="updateStudentName('${currentClass}', ${index}, this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-bold text-slate-900 text-sm md:text-base outline-none focus:ring-2 focus:ring-indigo-500"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[0] !== 0 ? g[0] : ''}" oninput="updateGrade('${currentSub}', '${student}', 0, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[1] !== 0 ? g[1] : ''}" oninput="updateGrade('${currentSub}', '${student}', 1, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[2] !== 0 ? g[2] : ''}" oninput="updateGrade('${currentSub}', '${student}', 2, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400 font-black text-blue-900 bg-blue-50/50 calc-m1 text-lg">٠</td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[3] !== 0 ? g[3] : ''}" oninput="updateGrade('${currentSub}', '${student}', 3, this)" class="w-14 text-center bg-amber-50 rounded border font-black text-lg"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[4] !== 0 ? g[4] : ''}" oninput="updateGrade('${currentSub}', '${student}', 4, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[5] !== 0 ? g[5] : ''}" oninput="updateGrade('${currentSub}', '${student}', 5, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[6] !== 0 ? g[6] : ''}" oninput="updateGrade('${currentSub}', '${student}', 6, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400 font-black text-emerald-900 bg-emerald-50/50 calc-m2 text-lg">٠</td>
+                    <td class="p-1 border-b border-r border-slate-400 font-black text-purple-900 bg-purple-50/50 calc-annual text-lg">٠</td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[7] !== 0 ? g[7] : ''}" oninput="updateGrade('${currentSub}', '${student}', 7, this)" class="w-14 text-center bg-rose-50 rounded border font-black text-lg"></td>
+                    <td class="p-1 border-b border-r border-slate-400 font-black text-indigo-950 bg-slate-100 calc-final text-lg">٠</td>
+                    <td class="p-1 border-b no-print"><button onclick="deleteStudent('${currentClass}', '${student}')" class="text-red-500 hover:text-red-700 font-bold">✕</button></td>
+                `;
+                tbody.appendChild(tr);
+                calcRowValues(tr, g);
+            });
+
+            updateFooterStats(currentSub, currentClass);
+            document.getElementById('selectAllCheckbox').checked = false;
+        }
+
+        window.toggleSelectAll = function(selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = selectAllCheckbox.checked;
+            });
+        }
+
+        window.deleteSelectedStudents = async function() {
+            const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("يرجى تحديد طالب واحد على الأقل لحذفه.");
+                return;
+            }
+
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const namesToDelete = Array.from(checkboxes).map(cb => cb.value);
+
+            if (confirm(`هل أنت متأكد من حذف ${namesToDelete.length} طالب/طلاب محددين نهائياً من هذا الصف ومن جميع المواد؟`)) {
+                classStudentsMap[currentClass] = classStudentsMap[currentClass].filter(student => !namesToDelete.includes(student));
+
+                subjects.forEach(sub => {
+                    if (schoolDb.grades[sub]) {
+                        namesToDelete.forEach(student => {
+                            delete schoolDb.grades[sub][student];
+                        });
+                    }
+                });
+
+                renderTable();
+                alert("تم حذف الطلاب المحددين بنجاح من كافة المواد! اضغط على 'حفظ في السحابة' لتثبيت الحذف في قاعدة البيانات سحابياً.");
+            }
+        }
+
+        window.updateGrade = function(subject, student, index, input) {
+            let val = input.value === "" ? 0 : parseFloat(input.value);
+            if(isNaN(val)) val = 0;
+            if(!schoolDb.grades[subject]) schoolDb.grades[subject] = {};
+            if(!schoolDb.grades[subject][student]) schoolDb.grades[subject][student] = [0,0,0,0,0,0,0,0];
+            schoolDb.grades[subject][student][index] = val;
+            
+            const row = input.closest('tr');
+            calcRowValues(row, schoolDb.grades[subject][student]);
+            
+            const currentClass = document.getElementById('classSectionSelect').value;
+            updateFooterStats(subject, currentClass);
+        }
+
+        window.calcRowValues = function(row, g) {
+            const m1 = schoolRound((g[0] + g[1] + g[2]) / 3);
+            const m2 = schoolRound((g[4] + g[5] + g[6]) / 3);
+
+            row.querySelector('.calc-m1').innerText = toArabicDigits(m1);
+            row.querySelector('.calc-m2').innerText = toArabicDigits(m2);
+
+            const hasTerm1 = (g[0] > 0 || g[1] > 0 || g[2] > 0);
+            const hasTerm2 = (g[4] > 0 || g[5] > 0 || g[6] > 0);
+
+            if (hasTerm1 && hasTerm2 && g[3] > 0) {
+                const annual = schoolRound((m1 + m2 + g[3]) / 3);
+                row.querySelector('.calc-annual').innerText = toArabicDigits(annual);
+
+                if (g[7] > 0) {
+                    const finalGrade = schoolRound((annual + g[7]) / 2);
+                    row.querySelector('.calc-final').innerText = toArabicDigits(finalGrade);
+                } else {
+                    row.querySelector('.calc-final').innerText = '٠';
+                }
+            } else {
+                row.querySelector('.calc-annual').innerText = '٠';
+                row.querySelector('.calc-final').innerText = '٠';
+            }
+        }
+
+        window.saveDataToCloud = async function() {
+            const currentSub = document.getElementById('subjectSelect').value;
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const academicYear = document.getElementById('globalAcademicYear').value;
+            const statusEl = document.getElementById('syncStatus');
+            
+            statusEl.innerText = "جاري الحفظ بالسحابة...";
+            try {
+                const cleanYear = academicYear.replace(/\s/g, '');
+                
+                const headersRef = doc(db, "school_system_v12", "global_headers_" + cleanYear);
+                await setDoc(headersRef, { headers: customHeaders }, { merge: true });
+
+                for (let sub of subjects) {
+                    const docId = currentClass.replace(/[\s-]/g, '_') + "_" + sub.replace(/[\s-]/g, '_') + "_" + cleanYear;
+                    const docRef = doc(db, "school_system_v12", docId);
+                    
+                    let currentGrades = schoolDb.grades[sub] || {};
+                    let cleanedGrades = {};
+                    classStudentsMap[currentClass].forEach(st => {
+                        if (currentGrades[st]) {
+                            cleanedGrades[st] = currentGrades[st];
+                        } else {
+                            cleanedGrades[st] = [0,0,0,0,0,0,0,0];
+                        }
+                    });
+
+                    await setDoc(docRef, {
+                        students: classStudentsMap[currentClass],
+                        grades: cleanedGrades,
+                        schoolInfo: {
+                            principal: globalPrincipalName,
+                            schoolName: globalSchoolName,
+                            directorate: globalDirectorate,
+                            teacher: teachersMap[sub] || 'قاسم ناظم موسى',
+                            classGuide: classGuidesMap[currentClass] || 'قاسم ناظم موسى'
+                        }
+                    }, { merge: true });
+                }
+
+                statusEl.innerText = "متصل بالسحابة ☁️";
+                statusEl.className = "text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold";
+                alert(`تم حفظ وتحديث قائمة الطلاب والدرجات وأسماء المديرية والمدرسة والمرشدين بنجاح في السحابة! ☁️`);
+            } catch(e) {
+                console.error("خطأ الحفظ:", e);
+                statusEl.innerText = "خطأ بالحفظ ⚠️";
+                alert("تعذر الحفظ السحابي، تأكد من الاتصال بالإنترنت.");
+            }
+        }
+
+        window.updateStudentName = function(className, index, newName) {
+            const oldName = classStudentsMap[className][index];
+            const cleanName = newName.trim();
+            if(!cleanName || cleanName === oldName) return;
+
+            classStudentsMap[className][index] = cleanName;
+
+            subjects.forEach(sub => {
+                if(schoolDb.grades[sub] && schoolDb.grades[sub][oldName]) {
+                    schoolDb.grades[sub][cleanName] = schoolDb.grades[sub][oldName];
+                    delete schoolDb.grades[sub][oldName];
+                }
+            });
+            renderTable();
+        }
+
+        window.addNewStudent = function() {
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const name = prompt("أدخل اسم الطالب الجديد:");
+            if (name && name.trim() !== "") {
+                const cleanName = name.trim();
+                if (!classStudentsMap[currentClass]) classStudentsMap[currentClass] = [];
+                classStudentsMap[currentClass].push(cleanName);
+                subjects.forEach(sub => {
+                    if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+                    schoolDb.grades[sub][cleanName] = [0,0,0,0,0,0,0,0];
+                });
+                renderTable();
+            }
+        }
+
+        window.deleteStudent = function(className, studentName) {
+            if(confirm(`هل أنت متأكد من حذف الطالب ${studentName} نهائياً من هذا الصف وجميع المواد؟`)) {
+                classStudentsMap[className] = classStudentsMap[className].filter(s => s !== studentName);
+                subjects.forEach(sub => {
+                    if(schoolDb.grades[sub]) {
+                        delete schoolDb.grades[sub][studentName];
+                    }
+                });
+                renderTable();
+            }
+        }
+
+        window.openImportModal = function() {
+            const currentClass = document.getElementById('classSectionSelect').value;
+            document.getElementById('importTargetClass').value = currentClass;
+            document.getElementById('importTextarea').value = '';
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        window.closeImportModal = function() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        window.handleFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('importTextarea').value = e.target.result;
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        window.processImportData = function() {
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const text = document.getElementById('importTextarea').value;
+            if(!text.trim()) {
+                alert("يرجى إدخال أو لصق أسماء الطلاب أولاً.");
+                return;
+            }
+
+            const lines = text.split('\n');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                let cleaned = line.trim();
+                if(cleaned) {
+                    let namePart = cleaned.replace(/[\d.]+/g, '').trim();
+                    if(!namePart) namePart = cleaned;
+                    
+                    if(namePart && !classStudentsMap[currentClass].includes(namePart)) {
+                        classStudentsMap[currentClass].push(namePart);
+                        subjects.forEach(sub => {
+                            if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+                            schoolDb.grades[sub][namePart] = [0,0,0,0,0,0,0,0];
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            closeImportModal();
+            renderTable();
+            alert(`تم استيراد وإضافة ${addedCount} طالب بنجاح إلى الصف: ${currentClass}`);
+        }
+
+        window.updateReportStudentsList = async function() {
+            const selectedClass = document.getElementById('reportClassFilter').value;
+            const studentSelect = document.getElementById('studentSelectReport');
+            studentSelect.innerHTML = '';
+            
+            await fetchAllSubjectsDataBackground();
+
+            const students = classStudentsMap[selectedClass] || [];
+            students.forEach((student, idx) => {
+                const opt = document.createElement('option');
+                opt.value = student;
+                opt.innerText = `[تسلسل ${toArabicDigits(idx + 1)}] ${student}`;
+                studentSelect.appendChild(opt);
+            });
+            generateStudentReport();
+        }
+
+        window.toggleReportMode = async function() {
+            const mode = document.getElementById('reportPrintMode').value;
+            document.getElementById('singleStudentDiv').classList.add('hidden');
+            document.getElementById('rangeSelectDiv').classList.add('hidden');
+
+            if(mode === 'single') document.getElementById('singleStudentDiv').classList.remove('hidden');
+            if(mode === 'range') document.getElementById('rangeSelectDiv').classList.remove('hidden');
+            
+            await fetchAllSubjectsDataBackground();
+            generateStudentReport();
+        }
+
+        window.generateStudentReport = function() {
+            const mode = document.getElementById('reportPrintMode').value;
+            const selectedClass = document.getElementById('reportClassFilter').value;
+            const academicYear = document.getElementById('globalAcademicYear').value;
+            const maxFailureLimit = parseInt(document.getElementById('maxFailureAllowed').value) || 2;
+            const decisionMode = document.getElementById('decisionGraceMode').value;
+            const currentClassGuide = classGuidesMap[selectedClass] || 'قاسم ناظم موسى';
+            const container = document.getElementById('reportsContainer');
+            container.innerHTML = '';
+
+            let targetStudents = [];
+            const classStudents = classStudentsMap[selectedClass] || [];
+
+            if (mode === 'single') {
+                const student = document.getElementById('studentSelectReport').value;
+                if(student) targetStudents.push(student);
+            } else if (mode === 'class') {
+                targetStudents = classStudents;
+            } else if (mode === 'range') {
+                const start = parseInt(document.getElementById('rangeStart').value) - 1;
+                const end = parseInt(document.getElementById('rangeEnd').value);
+                targetStudents = classStudents.slice(start, end);
+            }
+
+            if(targetStudents.length === 0 || classStudents.length === 0) {
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center font-bold text-slate-500">لا توجد نتائج لعرضها لهذا الصف أو السنة المختارة</div>`;
+                return;
+            }
+
+            targetStudents.forEach(student => {
+                const studentIndex = classStudents.indexOf(student) + 1;
+                const cardDiv = document.createElement('div');
+                cardDiv.className = "bg-white rounded-xl p-2 md:p-3 shadow-sm print-card border-2 border-slate-800 space-y-0.5";
+                
+                let totalSum = 0;
+                let hasIncompleteData = false;
+
+                let studentSubjectsEvaluation = subjects.map(sub => {
+                    const g = (schoolDb.grades[sub] && schoolDb.grades[sub][student]) ? schoolDb.grades[sub][student] : [0,0,0,0,0,0,0,0];
+                    const m1 = schoolRound((g[0] + g[1] + g[2]) / 3);
+                    const m2 = schoolRound((g[4] + g[5] + g[6]) / 3);
+                    
+                    const hasTerm1 = (g[0] > 0 || g[1] > 0 || g[2] > 0);
+                    const hasTerm2 = (g[4] > 0 || g[5] > 0 || g[6] > 0);
+                    
+                    let annual = 0, finalGrade = 0;
+                    let isPassed = false;
+                    let hasGrade = false;
+
+                    if (hasTerm1 && hasTerm2 && g[3] > 0) {
+                        annual = schoolRound((m1 + m2 + g[3]) / 3);
+                        if (g[7] > 0) {
+                            finalGrade = schoolRound((annual + g[7]) / 2);
+                            hasGrade = true;
+                            if (finalGrade >= 50) {
+                                isPassed = true;
+                            }
+                        } else {
+                            hasIncompleteData = true;
+                        }
+                    } else {
+                        hasIncompleteData = true;
+                    }
+
+                    return { sub, g, m1, m2, annual, finalGrade, isPassed, hasGrade, byGrace: false };
+                });
+
+                if (decisionMode === 'enabled') {
+                    let remainingGracePoints = 5;
+                    let failingItems = studentSubjectsEvaluation.filter(item => item.hasGrade && !item.isPassed && item.finalGrade >= 45 && item.finalGrade <= 49);
+
+                    failingItems.sort((a, b) => {
+                        if (b.finalGrade !== a.finalGrade) {
+                            return b.finalGrade - a.finalGrade;
+                        }
+                        return a.annual - b.annual;
+                    });
+
+                    failingItems.forEach(item => {
+                        let neededPoints = 50 - item.finalGrade;
+                        if (remainingGracePoints >= neededPoints) {
+                            item.isPassed = true;
+                            item.byGrace = true;
+                            remainingGracePoints -= neededPoints;
+                        }
+                    });
+                }
+
+                let finalFailedCount = studentSubjectsEvaluation.filter(item => item.hasGrade && !item.isPassed).length;
+                let isAllPassed = (finalFailedCount === 0 && !hasIncompleteData);
+
+                let tableRowsHtml = '';
+                studentSubjectsEvaluation.forEach(item => {
+                    let annualTxt = item.hasGrade || item.annual > 0 ? toArabicDigits(item.annual) : '٠';
+                    let finalTxt = item.hasGrade ? toArabicDigits(item.finalGrade) : '٠';
+                    let note = '--';
+                    let noteColor = "text-slate-500 font-medium";
+
+                    if (item.hasGrade) {
+                        if (item.isPassed) {
+                            if (item.byGrace) {
+                                note = "ناجح بقرار";
+                                noteColor = "text-blue-700 font-medium";
+                            } else {
+                                note = "ناجح";
+                                noteColor = "text-emerald-700 font-medium";
+                            }
+                        } else {
+                            if (finalFailedCount > maxFailureLimit) {
+                                note = "راسب";
+                                noteColor = "text-rose-600 font-medium";
+                            } else {
+                                note = "مكمل";
+                                noteColor = "text-amber-600 font-medium";
+                            }
+                        }
+                    }
+
+                    if (item.hasGrade) {
+                        totalSum += item.finalGrade;
+                    }
+
+                    tableRowsHtml += `
+                        <tr>
+                            <td class="p-1 border border-slate-600 font-bold text-right text-slate-900 text-[11px] md:text-[12px] w-[21%]">${item.sub}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]">${item.g[0] !== 0 ? toArabicDigits(item.g[0]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="تشرين الأول">${item.g[1] !== 0 ? toArabicDigits(item.g[1]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]">${item.g[2] !== 0 ? toArabicDigits(item.g[2]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-blue-950 bg-blue-50/60 text-[11.5px] md:text-[12.5px] w-[6%]">${toArabicDigits(item.m1)}</td>
+                            <td class="p-1 border border-slate-600 bg-amber-50 font-normal text-slate-950 text-[11.5px] md:text-[12.5px] w-[6.5%]">${item.g[3] !== 0 ? toArabicDigits(item.g[3]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="شباط">${item.g[4] !== 0 ? toArabicDigits(item.g[4]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="آذار">${item.g[5] !== 0 ? toArabicDigits(item.g[5]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="نيسان">${item.g[6] !== 0 ? toArabicDigits(item.g[6]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-emerald-950 bg-emerald-50/60 text-[11.5px] md:text-[12.5px] w-[6%]">${toArabicDigits(item.m2)}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-purple-950 bg-purple-50/60 text-[11.5px] md:text-[12.5px] w-[6.5%]" title="المعدل السنوي">${annualTxt}</td>
+                            <td class="p-1 border border-slate-600 bg-rose-50 font-normal text-slate-950 text-[11.5px] md:text-[12.5px] w-[6.5%]" title="الامتحان النهائي">${item.g[7] !== 0 ? toArabicDigits(item.g[7]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 bg-indigo-50 font-normal text-indigo-950 text-[11.5px] md:text-[12.5px] w-[7%]" title="الدرجة النهائية">${finalTxt}</td>
+                            <td class="p-1 border border-slate-600 ${noteColor} text-[10px] md:text-[11px] w-[9%]">${note}</td>
+                        </tr>
+                    `;
+                });
+
+                const finalSumDisplay = isAllPassed && totalSum > 0 ? toArabicDigits(totalSum) : '';
+
+                cardDiv.innerHTML = `
+                    <div class="text-center border-b border-slate-800 pb-0.5 flex flex-col items-center justify-center relative">
+                        <div class="flex items-center justify-between w-full px-2 mb-0.5">
+                            <span class="text-[10px] font-bold text-slate-700">${globalDirectorate}</span>
+                            <h2 class="text-[11px] md:text-[11.5px] font-black text-slate-900 border border-slate-800 px-2.5 py-0.5 rounded bg-slate-100">${globalSchoolName}</h2>
+                            <span class="text-[10px] font-bold text-slate-700">السنة الدراسية: ${academicYear}</span>
+                        </div>
+                        <div class="w-full flex justify-between items-center px-2 text-[11px] font-bold text-indigo-900 mt-0.5">
+                            <span>اسم الطالب: ${student} (تسلسل: ${toArabicDigits(studentIndex)})</span>
+                            <span>الصف والشعبة: ${selectedClass}</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto my-0.5">
+                        <table class="w-full text-center border-collapse text-[11px] border border-slate-800 table-fixed">
+                            <thead>
+                                <tr class="bg-slate-200 text-slate-900 font-bold border-b border-slate-400">
+                                    <th rowspan="2" class="p-1 border border-slate-600 w-[21%]">الدروس</th>
+                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-blue-100 font-bold w-[23%]">النصف الأول</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-amber-100 text-slate-900 w-[6.5%]">نصف<br>السنة</th>
+                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-emerald-100 font-bold w-[23%]">النصف الثاني</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-purple-100 text-slate-900 w-[6.5%]">المعدل<br>السنوي</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-rose-100 text-slate-900 w-[6.5%]">الامتحان<br>النهائي</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-indigo-100 text-indigo-950 w-[7%]">الدرجة<br>النهائية</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 w-[9%]">الملاحظات</th>
+                                </tr>
+                                <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 text-[10px]">
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.5%]">ت ١</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.5%]">ت ٢</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.5%]">ك ١</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-200 font-bold w-[6%]">المعدل</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.5%]">شباط</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.5%]">آذار</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.5%]">نيسان</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-200 font-bold w-[6%]">المعدل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex justify-between items-center px-1 my-0">
+                        <div class="flex gap-2">
+                            ${finalSumDisplay !== '' ? `
+                            <div class="bg-amber-100 border border-amber-400 px-2.5 py-0.5 rounded text-[12px] font-normal text-amber-950 shadow-sm">
+                                المجموع: ${finalSumDisplay}
+                            </div>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-end pt-1 border-t border-slate-800 text-[10.5px] md:text-[11px] font-bold text-slate-800 mt-auto">
+                        <div class="text-center">
+                            <p class="text-slate-700">توقيع مدير المدرسة:</p>
+                            <input type="text" value="${globalPrincipalName}" readonly class="text-center font-black text-slate-900 bg-transparent border-none outline-none w-32 text-[10.5px]">
+                        </div>
+                        <div class="text-center bg-indigo-50 px-2.5 py-0.5 rounded border border-indigo-200">
+                            <p class="text-[8.5px] text-slate-500 font-normal">إعداد المعلم:</p>
+                            <p class="font-black text-indigo-900 text-[9.5px]">قاسم ناظم موسى</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-slate-700">توقيع مرشد الصف:</p>
+                            <input type="text" value="${currentClassGuide}" readonly class="text-center font-black text-slate-900 bg-transparent border-none outline-none w-32 text-[10.5px]">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(cardDiv);
+            });
+        }
+
+        document.getElementById('globalAcademicYear').addEventListener('change', function() {
+            loadSubjectData();
+            if(!document.getElementById('tab-report').classList.contains('hidden')) {
+                updateReportStudentsList();
+            }
+        });
+
+        window.loadSubjectDate = function() {
+            loadSubjectData();
+        }
+
+        window.onload = function() {
+            loadSubjectData();
+        }
+    </script>
+</body>
+</html>
