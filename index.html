@@ -6,6 +6,17 @@
     <title>برنامج إدارة رصد درجات الطلاب والنتائج المدرسية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* توحيد قياس أعمدة الدرجات في الشاشة والطباعة */
+        #subjectTable {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #subjectTable .col-check { width: 36px; }
+        #subjectTable .col-seq { width: 38px; }
+        #subjectTable .col-name { width: 210px; }
+        #subjectTable .col-grade { width: 58px; }
+        #subjectTable .col-del { width: 42px; }
+
         @media print {
             body { background: white; margin: 0; padding: 0; }
             .no-print { display: none !important; }
@@ -15,10 +26,12 @@
                 margin: 4mm !important; 
             }
 
-            /* منع قص النصوص والأسماء وتنظيم التفاف الكلمات عند الطباعة */
-            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; }
-            #reportsContainer table { table-layout: fixed !important; }
-            #subjectTable { table-layout: auto !important; width: 100% !important; }
+            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed !important; }
+
+            /* توحيد قياس أعمدة الدرجات الـ 12 بالتساوي عند الطباعة */
+            #subjectTable .col-seq { width: 4.5% !important; }
+            #subjectTable .col-name { width: 23.5% !important; text-align: right !important; padding-right: 4px !important; }
+            #subjectTable .col-grade { width: 6% !important; }
 
             tr { break-inside: avoid !important; page-break-inside: avoid !important; }
             thead { display: table-header-group !important; }
@@ -41,7 +54,6 @@
                 box-sizing: border-box !important;
             }
 
-            /* فرض الانتقال لصفحة جديدة بعد كل بطاقتين تماماً */
             .print-card:nth-child(even) {
                 break-after: page !important;
                 page-break-after: always !important;
@@ -59,19 +71,16 @@
 
             th, td { 
                 border: 1.5px solid #000 !important; 
-                padding: 3px 2px !important; 
+                padding: 2.5px 1px !important; 
                 text-align: center !important; 
                 overflow: visible !important; 
                 word-break: keep-all !important; 
                 overflow-wrap: break-word !important;
                 white-space: normal !important;
             }
-            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10.5px !important; line-height: 1.2 !important; }
+            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10px !important; line-height: 1.2 !important; }
             
-            /* إظهار اسم الطالب كاملاً دون إخفاء في سجل الدرجات */
             #subjectTable .student-name-cell {
-                min-width: 175px !important;
-                width: 24% !important;
                 text-align: right !important;
                 padding-right: 5px !important;
                 white-space: nowrap !important;
@@ -82,7 +91,7 @@
             #subjectTable .print-student-name {
                 display: inline-block !important;
                 font-weight: bold !important;
-                font-size: 11.5px !important;
+                font-size: 11px !important;
                 color: #000 !important;
                 text-align: right !important;
                 white-space: nowrap !important;
@@ -92,7 +101,7 @@
             .print-header-text { 
                 display: block !important; 
                 font-weight: bold !important; 
-                font-size: 10.5px !important; 
+                font-size: 10px !important; 
                 color: #000 !important; 
                 text-align: center !important; 
                 line-height: 1.25 !important;
@@ -100,7 +109,7 @@
                 white-space: normal !important;
             }
             
-            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 12px !important; font-weight: bold !important; width: 100% !important; resize: none !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 11.5px !important; font-weight: bold !important; width: 100% !important; resize: none !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
         }
         .print-header-text { display: none; }
         .print-student-name { display: none; }
@@ -195,16 +204,34 @@
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-center border-collapse text-xs md:text-sm border border-slate-400" id="subjectTable">
+                        <colgroup>
+                            <col class="col-check no-print">
+                            <col class="col-seq">
+                            <col class="col-name">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-grade">
+                            <col class="col-del no-print">
+                        </colgroup>
                         <thead>
                             <tr class="bg-slate-200 text-slate-900 border-b border-slate-400 align-middle">
-                                <th rowspan="2" class="p-2 border-r border-slate-400 w-10 no-print">
+                                <th rowspan="2" class="p-2 border-r border-slate-400 no-print">
                                     <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 w-10 hover:bg-slate-300 transition-colors align-middle">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 hover:bg-slate-300 transition-colors align-middle">
                                     <textarea id="head_col_no" oninput="updateHeader('col_no', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت</textarea>
                                     <span class="print-header-text">ت</span>
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 min-w-[200px] student-name-cell hover:bg-slate-300 transition-colors align-middle text-right">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 student-name-cell hover:bg-slate-300 transition-colors align-middle text-right">
                                     <textarea id="head_col_name" oninput="updateHeader('col_name', this.value)" class="header-input h-10 text-[10px] md:text-xs text-right pr-2">اسم الطالب</textarea>
                                     <span class="print-header-text text-right pr-2">اسم الطالب</span>
                                 </th>
@@ -212,7 +239,7 @@
                                     <textarea id="head_top_1" oninput="updateHeader('top_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الأول</textarea>
                                     <span class="print-header-text">النصف الأول</span>
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-amber-100 w-16 hover:bg-amber-200 transition-colors align-middle">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-amber-100 hover:bg-amber-200 transition-colors align-middle">
                                     <textarea id="head_top_2" oninput="updateHeader('top_2', this.value)" class="header-input h-20 text-[10px] md:text-xs">نصف السنة</textarea>
                                     <span class="print-header-text">نصف السنة</span>
                                 </th>
@@ -220,50 +247,50 @@
                                     <textarea id="head_top_3" oninput="updateHeader('top_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الثاني</textarea>
                                     <span class="print-header-text">النصف الثاني</span>
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-purple-100 w-16 hover:bg-purple-200 transition-colors align-middle">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-purple-100 hover:bg-purple-200 transition-colors align-middle">
                                     <textarea id="head_top_4" oninput="updateHeader('top_4', this.value)" class="header-input h-20 text-[10px] md:text-xs">المعدل السنوي</textarea>
                                     <span class="print-header-text">المعدل السنوي</span>
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-rose-100 w-16 hover:bg-rose-200 transition-colors align-middle">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-rose-100 hover:bg-rose-200 transition-colors align-middle">
                                     <textarea id="head_top_5" oninput="updateHeader('top_5', this.value)" class="header-input h-20 text-[10px] md:text-xs">الامتحان النهائي</textarea>
                                     <span class="print-header-text">الامتحان النهائي</span>
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-indigo-100 w-20 hover:bg-indigo-200 transition-colors align-middle">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-indigo-100 hover:bg-indigo-200 transition-colors align-middle">
                                     <textarea id="head_top_6" oninput="updateHeader('top_6', this.value)" class="header-input h-20 text-indigo-950 text-[10px] md:text-xs">الدرجة النهائية</textarea>
                                     <span class="print-header-text">الدرجة النهائية</span>
                                 </th>
-                                <th rowspan="2" class="p-2 no-print w-12">حذف</th>
+                                <th rowspan="2" class="p-2 no-print">حذف</th>
                             </tr>
                             <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 align-middle">
-                                <th class="p-0 border-r border-slate-400 bg-blue-50 min-w-[48px] hover:bg-blue-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 hover:bg-blue-100 transition-colors">
                                     <textarea id="head_bot_1" oninput="updateHeader('bot_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ١</textarea>
                                     <span class="print-header-text">ت ١</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-50 min-w-[48px] hover:bg-blue-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 hover:bg-blue-100 transition-colors">
                                     <textarea id="head_bot_2" oninput="updateHeader('bot_2', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ٢</textarea>
                                     <span class="print-header-text">ت ٢</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-50 min-w-[48px] hover:bg-blue-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 hover:bg-blue-100 transition-colors">
                                     <textarea id="head_bot_3" oninput="updateHeader('bot_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">ك ١</textarea>
                                     <span class="print-header-text">ك ١</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-200 min-w-[54px] hover:bg-blue-300 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-200 hover:bg-blue-300 transition-colors">
                                     <textarea id="head_bot_4" oninput="updateHeader('bot_4', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea>
                                     <span class="print-header-text">المعدل</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50 min-w-[48px] hover:bg-emerald-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 hover:bg-emerald-100 transition-colors">
                                     <textarea id="head_bot_5" oninput="updateHeader('bot_5', this.value)" class="header-input h-10 text-[10px] md:text-xs">آذار</textarea>
                                     <span class="print-header-text">آذار</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50 min-w-[48px] hover:bg-emerald-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 hover:bg-emerald-100 transition-colors">
                                     <textarea id="head_bot_6" oninput="updateHeader('bot_6', this.value)" class="header-input h-10 text-[10px] md:text-xs">نيسان</textarea>
                                     <span class="print-header-text">نيسان</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50 min-w-[48px] hover:bg-emerald-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 hover:bg-emerald-100 transition-colors">
                                     <textarea id="head_bot_7" oninput="updateHeader('bot_7', this.value)" class="header-input h-10 text-[10px] md:text-xs">أيار</textarea>
                                     <span class="print-header-text">أيار</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-200 min-w-[54px] hover:bg-emerald-300 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-200 hover:bg-emerald-300 transition-colors">
                                     <textarea id="head_bot_8" oninput="updateHeader('bot_8', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea>
                                     <span class="print-header-text">المعدل</span>
                                 </th>
@@ -1046,17 +1073,17 @@
                         <input type="text" value="${student}" onchange="updateStudentName('${currentClass}', ${index}, this.value)" class="student-name-input w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-bold text-slate-900 text-sm md:text-base outline-none focus:ring-2 focus:ring-indigo-500">
                         <span class="print-student-name">${student}</span>
                     </td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[0] !== 0 ? g[0] : ''}" oninput="updateGrade('${currentSub}', '${student}', 0, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[1] !== 0 ? g[1] : ''}" oninput="updateGrade('${currentSub}', '${student}', 1, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[2] !== 0 ? g[2] : ''}" oninput="updateGrade('${currentSub}', '${student}', 2, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[0] !== 0 ? g[0] : ''}" oninput="updateGrade('${currentSub}', '${student}', 0, this)" class="w-full text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[1] !== 0 ? g[1] : ''}" oninput="updateGrade('${currentSub}', '${student}', 1, this)" class="w-full text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[2] !== 0 ? g[2] : ''}" oninput="updateGrade('${currentSub}', '${student}', 2, this)" class="w-full text-center bg-slate-50 rounded border text-lg font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400 font-black text-blue-900 bg-blue-50/50 calc-m1 text-lg">٠</td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[3] !== 0 ? g[3] : ''}" oninput="updateGrade('${currentSub}', '${student}', 3, this)" class="w-14 text-center bg-amber-50 rounded border font-black text-lg"></td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[4] !== 0 ? g[4] : ''}" oninput="updateGrade('${currentSub}', '${student}', 4, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[5] !== 0 ? g[5] : ''}" oninput="updateGrade('${currentSub}', '${student}', 5, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[6] !== 0 ? g[6] : ''}" oninput="updateGrade('${currentSub}', '${student}', 6, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[3] !== 0 ? g[3] : ''}" oninput="updateGrade('${currentSub}', '${student}', 3, this)" class="w-full text-center bg-amber-50 rounded border font-black text-lg"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[4] !== 0 ? g[4] : ''}" oninput="updateGrade('${currentSub}', '${student}', 4, this)" class="w-full text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[5] !== 0 ? g[5] : ''}" oninput="updateGrade('${currentSub}', '${student}', 5, this)" class="w-full text-center bg-slate-50 rounded border text-lg font-black"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[6] !== 0 ? g[6] : ''}" oninput="updateGrade('${currentSub}', '${student}', 6, this)" class="w-full text-center bg-slate-50 rounded border text-lg font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400 font-black text-emerald-900 bg-emerald-50/50 calc-m2 text-lg">٠</td>
                     <td class="p-1 border-b border-r border-slate-400 font-black text-purple-900 bg-purple-50/50 calc-annual text-lg">٠</td>
-                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[7] !== 0 ? g[7] : ''}" oninput="updateGrade('${currentSub}', '${student}', 7, this)" class="w-14 text-center bg-rose-50 rounded border font-black text-lg"></td>
+                    <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[7] !== 0 ? g[7] : ''}" oninput="updateGrade('${currentSub}', '${student}', 7, this)" class="w-full text-center bg-rose-50 rounded border font-black text-lg"></td>
                     <td class="p-1 border-b border-r border-slate-400 font-black text-indigo-950 bg-slate-100 calc-final text-lg">٠</td>
                     <td class="p-1 border-b no-print"><button onclick="deleteStudent('${currentClass}', '${student}')" class="text-red-500 hover:text-red-700 font-bold">✕</button></td>
                 `;
@@ -1471,19 +1498,19 @@
 
                     tableRowsHtml += `
                         <tr>
-                            <td class="p-1 border border-slate-600 font-bold text-right text-slate-900 text-[11px] md:text-[12px] w-[20%]">${item.sub}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[0] !== 0 ? toArabicDigits(item.g[0]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[1] !== 0 ? toArabicDigits(item.g[1]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[2] !== 0 ? toArabicDigits(item.g[2]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-bold text-right text-slate-900 text-[11px] md:text-[12px] w-[19%]">${item.sub}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[6%]">${item.g[0] !== 0 ? toArabicDigits(item.g[0]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[6%]">${item.g[1] !== 0 ? toArabicDigits(item.g[1]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[6%]">${item.g[2] !== 0 ? toArabicDigits(item.g[2]) : '٠'}</td>
                             <td class="p-1 border border-slate-600 font-normal text-blue-950 bg-blue-50/60 text-[11px] md:text-[12px] w-[6%]">${toArabicDigits(item.m1)}</td>
-                            <td class="p-1 border border-slate-600 bg-amber-50 font-normal text-slate-950 text-[11px] md:text-[12px] w-[6.5%]">${item.g[3] !== 0 ? toArabicDigits(item.g[3]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[4] !== 0 ? toArabicDigits(item.g[4]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[5] !== 0 ? toArabicDigits(item.g[5]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[6] !== 0 ? toArabicDigits(item.g[6]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 bg-amber-50 font-normal text-slate-950 text-[11px] md:text-[12px] w-[6%]">${item.g[3] !== 0 ? toArabicDigits(item.g[3]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[6%]">${item.g[4] !== 0 ? toArabicDigits(item.g[4]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[6%]">${item.g[5] !== 0 ? toArabicDigits(item.g[5]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[6%]">${item.g[6] !== 0 ? toArabicDigits(item.g[6]) : '٠'}</td>
                             <td class="p-1 border border-slate-600 font-normal text-emerald-950 bg-emerald-50/60 text-[11px] md:text-[12px] w-[6%]">${toArabicDigits(item.m2)}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-purple-950 bg-purple-50/60 text-[11px] md:text-[12px] w-[6.5%]">${annualTxt}</td>
-                            <td class="p-1 border border-slate-600 bg-rose-50 font-normal text-slate-950 text-[11px] md:text-[12px] w-[6.5%]">${item.g[7] !== 0 ? toArabicDigits(item.g[7]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 bg-indigo-50 font-normal text-indigo-950 text-[11px] md:text-[12px] w-[6.7%]">${finalTxt}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-purple-950 bg-purple-50/60 text-[11px] md:text-[12px] w-[6%]">${annualTxt}</td>
+                            <td class="p-1 border border-slate-600 bg-rose-50 font-normal text-slate-950 text-[11px] md:text-[12px] w-[6%]">${item.g[7] !== 0 ? toArabicDigits(item.g[7]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 bg-indigo-50 font-normal text-indigo-950 text-[11px] md:text-[12px] w-[6%]">${finalTxt}</td>
                             <td class="p-1 border border-slate-600 ${noteColor} text-[10px] md:text-[11px] w-[9%]">${note}</td>
                         </tr>
                     `;
@@ -1508,23 +1535,23 @@
                         <table class="w-full text-center border-collapse text-[10.5px] border border-slate-800 table-fixed">
                             <thead>
                                 <tr class="bg-slate-200 text-slate-900 font-bold border-b border-slate-400">
-                                    <th rowspan="2" class="p-1 border border-slate-600 w-[20%]">${customHeaders.rep_sub || 'الدروس'}</th>
-                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-blue-100 font-bold w-[23.4%]">${customHeaders.top_1 || 'النصف الأول'}</th>
-                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-amber-100 text-slate-900 w-[6.5%]">نصف<br>السنة</th>
-                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-emerald-100 font-bold w-[23.4%]">${customHeaders.top_3 || 'النصف الثاني'}</th>
-                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-purple-100 text-slate-900 w-[6.5%]">المعدل<br>السنوي</th>
-                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-rose-100 text-slate-900 w-[6.5%]">الامتحان<br>النهائي</th>
-                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-indigo-100 text-indigo-950 w-[6.7%]">الدرجة<br>النهائية</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 w-[19%]">${customHeaders.rep_sub || 'الدروس'}</th>
+                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-blue-100 font-bold w-[24%]">${customHeaders.top_1 || 'النصف الأول'}</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-amber-100 text-slate-900 w-[6%]">نصف<br>السنة</th>
+                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-emerald-100 font-bold w-[24%]">${customHeaders.top_3 || 'النصف الثاني'}</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-purple-100 text-slate-900 w-[6%]">المعدل<br>السنوي</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-rose-100 text-slate-900 w-[6%]">الامتحان<br>النهائي</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-indigo-100 text-indigo-950 w-[6%]">الدرجة<br>النهائية</th>
                                     <th rowspan="2" class="p-1 border border-slate-600 w-[9%]">${customHeaders.rep_note || 'الملاحظات'}</th>
                                 </tr>
                                 <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 text-[9.5px]">
-                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.8%]">${customHeaders.bot_1 || 'ت ١'}</th>
-                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.8%]">${customHeaders.bot_2 || 'ت ٢'}</th>
-                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.8%]">${customHeaders.bot_3 || 'ك ١'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[6%]">${customHeaders.bot_1 || 'ت ١'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[6%]">${customHeaders.bot_2 || 'ت ٢'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[6%]">${customHeaders.bot_3 || 'ك ١'}</th>
                                     <th class="p-0.5 border border-slate-600 bg-blue-200 font-bold w-[6%]">${customHeaders.bot_4 || 'المعدل'}</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.8%]">${customHeaders.bot_5 || 'آذار'}</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.8%]">${customHeaders.bot_6 || 'نيسان'}</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.8%]">${customHeaders.bot_7 || 'أيار'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[6%]">${customHeaders.bot_5 || 'آذار'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[6%]">${customHeaders.bot_6 || 'نيسان'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[6%]">${customHeaders.bot_7 || 'أيار'}</th>
                                     <th class="p-0.5 border border-slate-600 bg-emerald-200 font-bold w-[6%]">${customHeaders.bot_8 || 'المعدل'}</th>
                                 </tr>
                             </thead>
