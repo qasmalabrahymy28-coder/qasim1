@@ -92,19 +92,15 @@
                 <p class="text-indigo-200 text-xs md:text-sm mt-1">تصميم وإعداد المدرس المساعد: قاسم ناظم موسى الابراهيمي</p>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
-                <div class="flex items-center gap-1 bg-indigo-800 px-3 py-1.5 rounded-xl border border-indigo-700">
+                <!-- اختيار أو كتابة أي عام دراسي إلى مدى الحياة -->
+                <div class="flex items-center gap-1.5 bg-indigo-800 px-3 py-1.5 rounded-xl border border-indigo-700 flex-wrap">
                     <label class="text-xs text-indigo-200 font-bold">العام الدراسي:</label>
-                    <select id="globalAcademicYear" class="bg-indigo-950 text-white text-xs font-bold px-2 py-1 rounded-lg outline-none border border-indigo-600">
-                        <option value="٢٠٢٦ - ٢٠٢٧" selected>٢٠٢٦ - ٢٠٢٧</option>
-                        <option value="٢٠٢٧ - ٢٠٢٨">٢٠٢٧ - ٢٠٢٨</option>
-                        <option value="٢٠٢٨ - ٢٠٢٩">٢٠٢٨ - ٢٠٢٩</option>
-                        <option value="٢٠٢٩ - ٢٠٣٠">٢٠٢٩ - ٢٠٣٠</option>
-                        <option value="٢٠٣٠ - ٢٠٣١">٢٠٣٠ - ٢٠٣١</option>
-                        <option value="٢٠٣١ - ٢٠٣٢">٢٠٣١ - ٢٠٣٢</option>
-                    </select>
+                    <input type="text" id="globalAcademicYear" list="academicYearsDatalist" value="٢٠٢٦ - ٢٠٢٧" onchange="onAcademicYearChange()" onkeypress="if(event.key==='Enter'){this.blur(); onAcademicYearChange();}" placeholder="مثال: ٢٠٢٧ - ٢٠٢٨ أو ٢١٠٠ - ٢١٠١" class="bg-indigo-950 text-white text-xs font-bold px-2.5 py-1 rounded-lg outline-none border border-indigo-600 w-36 text-center">
+                    <datalist id="academicYearsDatalist"></datalist>
+                    <button type="button" onclick="openCustomYearModal()" title="توليد أو إضافة سنة دراسية مخصصة" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-lg transition">＋ سنة</button>
                 </div>
 
-                <span id="syncStatus" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold">جاهز للعمل ✨</span>
+                <span id="syncStatus" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold">محفوظ محلياً وجاهز ✨</span>
                 <div class="flex gap-2">
                     <button onclick="switchTab('entry')" id="btn-entry" class="bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition">إدخال الدرجات</button>
                     <button onclick="switchTab('report')" id="btn-report" class="bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition opacity-70">نتيجة الطالب الشاملة</button>
@@ -152,7 +148,7 @@
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-slate-400 pb-6">
                 <div class="p-4 bg-indigo-50 border-b border-indigo-200 flex justify-between items-center">
                     <h3 id="currentSubjectTitle" class="font-bold text-indigo-900 text-sm md:text-base">سجل درجات المادة</h3>
-                    <span class="text-xs text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200">العمل الفوري السريع</span>
+                    <span class="text-xs text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200">حفظ تلقائي مستمر</span>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -334,6 +330,27 @@
         </section>
     </div>
 
+    <!-- نافذة إضافة سنة دراسية لأي سنة -->
+    <div id="customYearModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-indigo-900">تحديد أو إضافة عام دراسي</h3>
+                <button onclick="closeCustomYearModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">أدخل سنة البداية (مثال: 2027 أو 2050 أو 2100):</label>
+                    <input type="number" id="startYearInput" placeholder="2027" class="w-full border rounded-xl px-3 py-2 bg-slate-50 font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500">
+                    <p class="text-[11px] text-slate-500 mt-1">سيتم تكوين العام الدراسي تلقائياً (سنة البداية - السنة التالية) وإضافته لقائمة السنوات.</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeCustomYearModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-xl font-medium text-sm transition">إلغاء</button>
+                <button onclick="applyCustomAcademicYear()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-medium text-sm transition">تطبيق السنة</button>
+            </div>
+        </div>
+    </div>
+
     <!-- نافذة الاستيراد (Modal) -->
     <div id="importModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
@@ -395,6 +412,13 @@
             'الرياضيات الحديثة', 'الاجتماعيات', 'العلوم والتربية الصحية', 'التربية الرياضية', 'التربية الفنية والنشيد'
         ];
 
+        const classesList = [
+            "الخامس الابتدائي - أ",
+            "الخامس الابتدائي - ب",
+            "السادس الابتدائي - أ",
+            "السادس الابتدائي - ب"
+        ];
+
         let customHeaders = {
             col_no: 'ت', col_name: 'اسم الطالب', rep_sub: 'الدروس', rep_note: 'الملاحظات',
             top_1: 'النصف الاول', top_2: 'نصف السنة', top_3: 'النصف الثاني',
@@ -416,10 +440,88 @@
             "السادس الابتدائي - ب": "قاسم ناظم موسى"
         };
 
+        let deletedStudentsMap = {};
+        classesList.forEach(c => { deletedStudentsMap[c] = []; });
+
+        let savedYearsList = [
+            "٢٠٢٦ - ٢٠٢٧", "٢٠٢٧ - ٢٠٢٨", "٢٠٢٨ - ٢٠٢٩", "٢٠٢٩ - ٢٠٣٠",
+            "٢٠٣٠ - ٢٠٣١", "٢٠٣١ - ٢٠٣٢", "٢٠٥٠ - ٢٠٢١", "٢١٠٠ - ٢١٠١"
+        ];
+
         function toArabicDigits(num) {
             if (num === undefined || num === null || isNaN(num) || num === '') return '٠';
             const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
             return String(num).replace(/\d/g, (digit) => arabicNumbers[digit]);
+        }
+
+        function normalizeWesternDigits(str) {
+            const arabicToWestern = {
+                '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+            };
+            return String(str || '').replace(/[٠-٩]/g, d => arabicToWestern[d]);
+        }
+
+        function formatAcademicYearLabel(startNum) {
+            const y1 = parseInt(startNum, 10);
+            if (isNaN(y1) || y1 < 1000 || y1 > 9998) return null;
+            return `${toArabicDigits(y1)} - ${toArabicDigits(y1 + 1)}`;
+        }
+
+        function renderAcademicYearsDatalist() {
+            const dl = document.getElementById('academicYearsDatalist');
+            if (!dl) return;
+            const uniqueYears = Array.from(new Set(savedYearsList));
+            dl.innerHTML = uniqueYears.map(y => `<option value="${y}"></option>`).join('');
+        }
+
+        function registerAcademicYear(yr) {
+            const clean = String(yr || '').trim();
+            if (!clean) return;
+            if (!savedYearsList.includes(clean)) {
+                savedYearsList.unshift(clean);
+            }
+            renderAcademicYearsDatalist();
+        }
+
+        window.openCustomYearModal = function() {
+            document.getElementById('startYearInput').value = '';
+            document.getElementById('customYearModal').classList.remove('hidden');
+            document.getElementById('startYearInput').focus();
+        }
+
+        window.closeCustomYearModal = function() {
+            document.getElementById('customYearModal').classList.add('hidden');
+        }
+
+        window.applyCustomAcademicYear = function() {
+            const rawVal = normalizeWesternDigits(document.getElementById('startYearInput').value).trim();
+            const yr = formatAcademicYearLabel(rawVal);
+            if (!yr) {
+                alert("يرجى إدخال سنة بداية صحيحة مثل 2027 أو 2050 أو 2100.");
+                return;
+            }
+            registerAcademicYear(yr);
+            document.getElementById('globalAcademicYear').value = yr;
+            closeCustomYearModal();
+            persistLocally(yr);
+            onAcademicYearChange();
+        }
+
+        window.onAcademicYearChange = async function() {
+            const inputEl = document.getElementById('globalAcademicYear');
+            let yr = inputEl.value.trim();
+            if (!yr) {
+                yr = "٢٠٢٦ - ٢٠٢٧";
+                inputEl.value = yr;
+            }
+            registerAcademicYear(yr);
+            loadSubjectData();
+            if (!document.getElementById('tab-report').classList.contains('hidden')) {
+                updateReportStudentsList();
+                await fetchAllSubjectsDataBackground();
+                updateReportStudentsList();
+            }
         }
 
         let defaultStudentsClassA = [
@@ -444,7 +546,157 @@
         let schoolDb = { grades: {} };
         subjects.forEach(sub => { schoolDb.grades[sub] = {}; });
 
+        function getStorageKey(academicYear) {
+            return "qasim41_local_db_" + normalizeWesternDigits(academicYear).replace(/\s+/g, '');
+        }
+
+        function persistLocally(academicYear = null) {
+            try {
+                const yr = academicYear || document.getElementById('globalAcademicYear').value;
+                registerAcademicYear(yr);
+                const payload = {
+                    customHeaders,
+                    globalPrincipalName,
+                    globalSchoolName,
+                    globalDirectorate,
+                    teachersMap,
+                    classGuidesMap,
+                    deletedStudentsMap,
+                    classStudentsMap,
+                    grades: schoolDb.grades,
+                    savedYearsList,
+                    updatedAt: Date.now()
+                };
+                localStorage.setItem(getStorageKey(yr), JSON.stringify(payload));
+                localStorage.setItem("qasim41_years_registry", JSON.stringify(savedYearsList));
+            } catch (err) {
+                console.error("تعذر الحفظ في التخزين المحلي:", err);
+            }
+        }
+
+        function loadYearsRegistry() {
+            try {
+                const rawYears = localStorage.getItem("qasim41_years_registry");
+                if (rawYears) {
+                    const parsed = JSON.parse(rawYears);
+                    if (Array.isArray(parsed)) {
+                        savedYearsList = Array.from(new Set([...parsed, ...savedYearsList]));
+                    }
+                }
+            } catch (e) {}
+            renderAcademicYearsDatalist();
+        }
+
+        function loadFromLocalStorage(academicYear) {
+            try {
+                const raw = localStorage.getItem(getStorageKey(academicYear));
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+
+                if (data.customHeaders) customHeaders = { ...customHeaders, ...data.customHeaders };
+                if (data.globalPrincipalName) globalPrincipalName = data.globalPrincipalName;
+                if (data.globalSchoolName) globalSchoolName = data.globalSchoolName;
+                if (data.globalDirectorate) globalDirectorate = data.globalDirectorate;
+                if (data.teachersMap) teachersMap = { ...teachersMap, ...data.teachersMap };
+                if (data.classGuidesMap) classGuidesMap = { ...classGuidesMap, ...data.classGuidesMap };
+                if (data.deletedStudentsMap) deletedStudentsMap = { ...deletedStudentsMap, ...data.deletedStudentsMap };
+                if (Array.isArray(data.savedYearsList)) {
+                    savedYearsList = Array.from(new Set([...data.savedYearsList, ...savedYearsList]));
+                    renderAcademicYearsDatalist();
+                }
+
+                if (data.classStudentsMap) {
+                    classesList.forEach(cls => {
+                        if (Array.isArray(data.classStudentsMap[cls])) {
+                            const deleted = new Set(deletedStudentsMap[cls] || []);
+                            classStudentsMap[cls] = data.classStudentsMap[cls].filter(s => !deleted.has(s));
+                        }
+                    });
+                }
+
+                if (data.grades) {
+                    subjects.forEach(sub => {
+                        if (!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+                        if (data.grades[sub]) {
+                            schoolDb.grades[sub] = { ...schoolDb.grades[sub], ...data.grades[sub] };
+                        }
+                    });
+                }
+
+                syncHeaderInputsFromState();
+                return true;
+            } catch (err) {
+                console.error("خطأ في قراءة التخزين المحلي:", err);
+                return false;
+            }
+        }
+
+        function syncHeaderInputsFromState() {
+            for (let key in customHeaders) {
+                let el = document.getElementById('head_' + key);
+                if (el) {
+                    el.value = customHeaders[key];
+                    const span = el.parentElement.querySelector('.print-header-text');
+                    if (span) span.innerText = customHeaders[key];
+                }
+            }
+            const dirEl = document.getElementById('directorateInput');
+            const schEl = document.getElementById('schoolNameInput');
+            const prinEl = document.getElementById('principalNameEntry');
+            const clsGuideEl = document.getElementById('classGuideInput');
+            const activeCls = document.getElementById('reportClassFilter')?.value || 'الخامس الابتدائي - أ';
+
+            if (dirEl) dirEl.value = globalDirectorate;
+            if (schEl) schEl.value = globalSchoolName;
+            if (prinEl) prinEl.value = globalPrincipalName;
+            if (clsGuideEl) clsGuideEl.value = classGuidesMap[activeCls] || 'قاسم ناظم موسى';
+        }
+
+        function mergeClassStudents(currentClass, incomingStudents) {
+            if (!Array.isArray(incomingStudents)) return;
+            const deleted = new Set(deletedStudentsMap[currentClass] || []);
+            if (!Array.isArray(classStudentsMap[currentClass])) {
+                classStudentsMap[currentClass] = [];
+            }
+            const existing = new Set(classStudentsMap[currentClass]);
+            incomingStudents.forEach(st => {
+                const name = String(st || '').trim();
+                if (name && !deleted.has(name) && !existing.has(name)) {
+                    classStudentsMap[currentClass].push(name);
+                    existing.add(name);
+                }
+            });
+        }
+
+        function mergeSubjectGrades(sub, incomingGrades, currentClass) {
+            if (!incomingGrades || typeof incomingGrades !== 'object') return;
+            if (!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+            const deleted = new Set(deletedStudentsMap[currentClass] || []);
+
+            Object.keys(incomingGrades).forEach(student => {
+                if (deleted.has(student)) return;
+                const incArr = incomingGrades[student];
+                if (!Array.isArray(incArr)) return;
+
+                const curArr = schoolDb.grades[sub][student];
+                if (!curArr) {
+                    schoolDb.grades[sub][student] = [...incArr];
+                } else {
+                    const curHasNonZero = curArr.some(v => Number(v) !== 0);
+                    const incHasNonZero = incArr.some(v => Number(v) !== 0);
+                    if (!curHasNonZero && incHasNonZero) {
+                        schoolDb.grades[sub][student] = [...incArr];
+                    }
+                }
+            });
+        }
+
+        function buildYearSafeKey(academicYear) {
+            return normalizeWesternDigits(academicYear).replace(/[^\dA-Za-z\u0600-\u06FF_-]+/g, '_');
+        }
+
         window.switchTab = async function(tab) {
+            persistLocally();
             if(tab === 'entry') {
                 document.getElementById('tab-entry').classList.remove('hidden');
                 document.getElementById('tab-report').classList.add('hidden');
@@ -457,6 +709,7 @@
                 document.getElementById('btn-report').className = "bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition";
                 document.getElementById('btn-entry').className = "bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition opacity-70";
                 
+                updateReportStudentsList();
                 await fetchAllSubjectsDataBackground();
                 updateReportStudentsList();
             }
@@ -470,10 +723,12 @@
                 const span = ta.parentElement.querySelector('.print-header-text');
                 if(span) span.innerText = value;
             });
+            persistLocally();
         }
 
         window.updatePrincipalName = function(val) {
             globalPrincipalName = val;
+            persistLocally();
             if(!document.getElementById('tab-report').classList.contains('hidden')) {
                 generateStudentReport();
             }
@@ -481,6 +736,7 @@
 
         window.updateSchoolName = function(val) {
             globalSchoolName = val;
+            persistLocally();
             if(!document.getElementById('tab-report').classList.contains('hidden')) {
                 generateStudentReport();
             }
@@ -488,6 +744,7 @@
 
         window.updateDirectorate = function(val) {
             globalDirectorate = val;
+            persistLocally();
             if(!document.getElementById('tab-report').classList.contains('hidden')) {
                 generateStudentReport();
             }
@@ -496,6 +753,7 @@
         window.updateTeacherName = function(val) {
             const currentSub = document.getElementById('subjectSelect').value;
             teachersMap[currentSub] = val;
+            persistLocally();
             if(!document.getElementById('tab-report').classList.contains('hidden')) {
                 generateStudentReport();
             }
@@ -504,14 +762,17 @@
         window.updateClassGuide = function(val) {
             const currentClass = document.getElementById('reportClassFilter').value;
             classGuidesMap[currentClass] = val;
+            persistLocally();
             if(!document.getElementById('tab-report').classList.contains('hidden')) {
                 generateStudentReport();
             }
         }
 
-        window.onReportClassChanged = function() {
+        window.onReportClassChanged = async function() {
             const currentClass = document.getElementById('reportClassFilter').value;
             document.getElementById('classGuideInput').value = classGuidesMap[currentClass] || 'قاسم ناظم موسى';
+            updateReportStudentsList();
+            await fetchAllSubjectsDataBackground();
             updateReportStudentsList();
         }
 
@@ -519,6 +780,8 @@
             const currentSub = document.getElementById('subjectSelect').value;
             const currentClass = document.getElementById('classSectionSelect').value;
             const academicYear = document.getElementById('globalAcademicYear').value;
+
+            loadFromLocalStorage(academicYear);
             
             document.getElementById('currentSubjectTitle').innerText = `سجل درجات مادة: ${currentSub} (${currentClass}) - العام الدراسي: ${academicYear}`;
             
@@ -532,20 +795,13 @@
         async function fetchFromCloudBackground(currentSub, currentClass, academicYear) {
             const statusEl = document.getElementById('syncStatus');
             try {
-                const cleanYear = academicYear.replace(/\s/g, '');
+                const cleanYear = buildYearSafeKey(academicYear);
                 
                 const headersRef = doc(db, "school_system_v12", "global_headers_" + cleanYear);
                 const headersSnap = await getDoc(headersRef);
                 if (headersSnap.exists() && headersSnap.data().headers) {
                     customHeaders = { ...customHeaders, ...headersSnap.data().headers };
-                    for (let key in customHeaders) {
-                        let el = document.getElementById('head_' + key);
-                        if (el) {
-                            el.value = customHeaders[key];
-                            const span = el.parentElement.querySelector('.print-header-text');
-                            if(span) span.innerText = customHeaders[key];
-                        }
-                    }
+                    syncHeaderInputsFromState();
                 }
 
                 const docId = currentClass.replace(/[\s-]/g, '_') + "_" + currentSub.replace(/[\s-]/g, '_') + "_" + cleanYear;
@@ -554,53 +810,51 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if(data.students) {
-                        classStudentsMap[currentClass] = data.students;
+                    if (Array.isArray(data.deletedStudents)) {
+                        deletedStudentsMap[currentClass] = Array.from(new Set([...(deletedStudentsMap[currentClass] || []), ...data.deletedStudents]));
                     }
-                    if(data.grades) {
-                        schoolDb.grades[currentSub] = data.grades;
+                    if (data.students) {
+                        mergeClassStudents(currentClass, data.students);
                     }
-                    if(data.schoolInfo) {
-                        if(data.schoolInfo.principal) {
-                            globalPrincipalName = data.schoolInfo.principal;
-                            document.getElementById('principalNameEntry').value = globalPrincipalName;
-                        }
-                        if(data.schoolInfo.schoolName) {
-                            globalSchoolName = data.schoolInfo.schoolName;
-                            document.getElementById('schoolNameInput').value = globalSchoolName;
-                        }
-                        if(data.schoolInfo.directorate) {
-                            globalDirectorate = data.schoolInfo.directorate;
-                            document.getElementById('directorateInput').value = globalDirectorate;
-                        }
-                        if(data.schoolInfo.teacher) {
+                    if (data.grades) {
+                        mergeSubjectGrades(currentSub, data.grades, currentClass);
+                    }
+                    if (data.schoolInfo) {
+                        if (data.schoolInfo.principal) globalPrincipalName = data.schoolInfo.principal;
+                        if (data.schoolInfo.schoolName) globalSchoolName = data.schoolInfo.schoolName;
+                        if (data.schoolInfo.directorate) globalDirectorate = data.schoolInfo.directorate;
+                        if (data.schoolInfo.teacher) {
                             teachersMap[currentSub] = data.schoolInfo.teacher;
                             document.getElementById('teacherNameEntry').value = teachersMap[currentSub];
                         }
-                        if(data.schoolInfo.classGuide) {
+                        if (data.schoolInfo.classGuide) {
                             classGuidesMap[currentClass] = data.schoolInfo.classGuide;
-                            document.getElementById('classGuideInput').value = classGuidesMap[currentClass];
                         }
+                        syncHeaderInputsFromState();
                     }
 
+                    persistLocally(academicYear);
                     renderTable();
-                    statusEl.innerText = "متصل بالسحابة ☁️";
+                    statusEl.innerText = "محفوظ محلياً ومتصل بالسحابة ☁️";
                     statusEl.className = "text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold";
                 } else {
-                    statusEl.innerText = "جاهز محلياً ✨";
+                    persistLocally(academicYear);
+                    statusEl.innerText = "محفوظ محلياً (اضغط حفظ للسحابة) ✨";
                     statusEl.className = "text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-semibold";
                 }
             } catch(e) {
-                console.warn("العمل بالوضع المحلي السريع:", e);
-                statusEl.innerText = "جاهز محلياً ✨";
-                statusEl.className = "text-xs bg-purple-600 text-white px-3 py-1 rounded-full font-semibold";
+                console.warn("العمل بالوضع المحلي:", e);
+                statusEl.innerText = "محفوظ محلياً 🔒";
+                statusEl.className = "text-xs bg-amber-600 text-white px-3 py-1 rounded-full font-semibold";
             }
         }
 
         async function fetchAllSubjectsDataBackground() {
             const currentClass = document.getElementById('reportClassFilter').value;
             const academicYear = document.getElementById('globalAcademicYear').value;
-            const cleanYear = academicYear.replace(/\s/g, '');
+            const cleanYear = buildYearSafeKey(academicYear);
+
+            loadFromLocalStorage(academicYear);
 
             try {
                 const headersRef = doc(db, "school_system_v12", "global_headers_" + cleanYear);
@@ -617,25 +871,29 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        if(data.students) {
-                            classStudentsMap[currentClass] = data.students;
+                        if (Array.isArray(data.deletedStudents)) {
+                            deletedStudentsMap[currentClass] = Array.from(new Set([...(deletedStudentsMap[currentClass] || []), ...data.deletedStudents]));
                         }
-                        if(data.grades) schoolDb.grades[sub] = data.grades;
-                        if(data.schoolInfo) {
-                            if(data.schoolInfo.principal) globalPrincipalName = data.schoolInfo.principal;
-                            if(data.schoolInfo.schoolName) globalSchoolName = data.schoolInfo.schoolName;
-                            if(data.schoolInfo.directorate) globalDirectorate = data.schoolInfo.directorate;
-                            if(data.schoolInfo.teacher) teachersMap[sub] = data.schoolInfo.teacher;
-                            if(data.schoolInfo.classGuide) classGuidesMap[currentClass] = data.schoolInfo.classGuide;
+                        if (data.students) {
+                            mergeClassStudents(currentClass, data.students);
+                        }
+                        if (data.grades) {
+                            mergeSubjectGrades(sub, data.grades, currentClass);
+                        }
+                        if (data.schoolInfo) {
+                            if (data.schoolInfo.principal) globalPrincipalName = data.schoolInfo.principal;
+                            if (data.schoolInfo.schoolName) globalSchoolName = data.schoolInfo.schoolName;
+                            if (data.schoolInfo.directorate) globalDirectorate = data.schoolInfo.directorate;
+                            if (data.schoolInfo.teacher) teachersMap[sub] = data.schoolInfo.teacher;
+                            if (data.schoolInfo.classGuide) classGuidesMap[currentClass] = data.schoolInfo.classGuide;
                         }
                     }
                 } catch(e) {
                     console.error(`خطأ في جلب بيانات مادة ${sub}:`, e);
                 }
             }
-            document.getElementById('classGuideInput').value = classGuidesMap[currentClass] || 'قاسم ناظم موسى';
-            document.getElementById('schoolNameInput').value = globalSchoolName;
-            document.getElementById('directorateInput').value = globalDirectorate;
+            persistLocally(academicYear);
+            syncHeaderInputsFromState();
         }
 
         window.updateFooterStats = function(currentSub, currentClass) {
@@ -783,6 +1041,9 @@
             const namesToDelete = Array.from(checkboxes).map(cb => cb.value);
 
             if (confirm(`هل أنت متأكد من حذف ${namesToDelete.length} طالب/طلاب محددين نهائياً من هذا الصف ومن جميع المواد؟`)) {
+                if (!deletedStudentsMap[currentClass]) deletedStudentsMap[currentClass] = [];
+                deletedStudentsMap[currentClass] = Array.from(new Set([...deletedStudentsMap[currentClass], ...namesToDelete]));
+
                 classStudentsMap[currentClass] = classStudentsMap[currentClass].filter(student => !namesToDelete.includes(student));
 
                 subjects.forEach(sub => {
@@ -793,8 +1054,9 @@
                     }
                 });
 
+                persistLocally();
                 renderTable();
-                alert("تم حذف الطلاب المحددين بنجاح من كافة المواد! اضغط على 'حفظ في السحابة' لتثبيت الحذف في قاعدة البيانات سحابياً.");
+                alert("تم حذف الطلاب المحددين وتثبيت الحذف محلياً. اضغط على 'حفظ في السحابة' لمزامنة الحذف سحابياً.");
             }
         }
 
@@ -810,6 +1072,7 @@
             
             const currentClass = document.getElementById('classSectionSelect').value;
             updateFooterStats(subject, currentClass);
+            persistLocally();
         }
 
         window.calcRowValues = function(row, g) {
@@ -843,48 +1106,48 @@
             const currentClass = document.getElementById('classSectionSelect').value;
             const academicYear = document.getElementById('globalAcademicYear').value;
             const statusEl = document.getElementById('syncStatus');
+
+            registerAcademicYear(academicYear);
+            persistLocally(academicYear);
             
             statusEl.innerText = "جاري الحفظ بالسحابة...";
             try {
-                const cleanYear = academicYear.replace(/\s/g, '');
+                const cleanYear = buildYearSafeKey(academicYear);
                 
                 const headersRef = doc(db, "school_system_v12", "global_headers_" + cleanYear);
-                await setDoc(headersRef, { headers: customHeaders }, { merge: true });
+                await setDoc(headersRef, { headers: customHeaders, academicYear }, { merge: true });
 
-                for (let sub of subjects) {
-                    const docId = currentClass.replace(/[\s-]/g, '_') + "_" + sub.replace(/[\s-]/g, '_') + "_" + cleanYear;
-                    const docRef = doc(db, "school_system_v12", docId);
-                    
-                    let currentGrades = schoolDb.grades[sub] || {};
-                    let cleanedGrades = {};
-                    classStudentsMap[currentClass].forEach(st => {
-                        if (currentGrades[st]) {
-                            cleanedGrades[st] = currentGrades[st];
-                        } else {
-                            cleanedGrades[st] = [0,0,0,0,0,0,0,0];
-                        }
-                    });
+                const docId = currentClass.replace(/[\s-]/g, '_') + "_" + currentSub.replace(/[\s-]/g, '_') + "_" + cleanYear;
+                const docRef = doc(db, "school_system_v12", docId);
+                
+                let currentGrades = schoolDb.grades[currentSub] || {};
+                let cleanedGrades = {};
+                (classStudentsMap[currentClass] || []).forEach(st => {
+                    cleanedGrades[st] = currentGrades[st] || [0,0,0,0,0,0,0,0];
+                });
 
-                    await setDoc(docRef, {
-                        students: classStudentsMap[currentClass],
-                        grades: cleanedGrades,
-                        schoolInfo: {
-                            principal: globalPrincipalName,
-                            schoolName: globalSchoolName,
-                            directorate: globalDirectorate,
-                            teacher: teachersMap[sub] || 'قاسم ناظم موسى',
-                            classGuide: classGuidesMap[currentClass] || 'قاسم ناظم موسى'
-                        }
-                    }, { merge: true });
-                }
+                await setDoc(docRef, {
+                    academicYear,
+                    students: classStudentsMap[currentClass] || [],
+                    deletedStudents: deletedStudentsMap[currentClass] || [],
+                    grades: cleanedGrades,
+                    schoolInfo: {
+                        principal: globalPrincipalName,
+                        schoolName: globalSchoolName,
+                        directorate: globalDirectorate,
+                        teacher: teachersMap[currentSub] || 'قاسم ناظم موسى',
+                        classGuide: classGuidesMap[currentClass] || 'قاسم ناظم موسى'
+                    }
+                }, { merge: true });
 
-                statusEl.innerText = "متصل بالسحابة ☁️";
+                statusEl.innerText = "محفوظ محلياً ومتصل بالسحابة ☁️";
                 statusEl.className = "text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold";
-                alert(`تم حفظ وتحديث قائمة الطلاب والدرجات وأسماء المديرية والمدرسة والمرشدين بنجاح في السحابة! ☁️`);
+                alert(`تم حفظ البيانات محلياً وفي السحابة بنجاح لعام (${academicYear}) - مادة (${currentSub}) - ${currentClass} ☁️`);
             } catch(e) {
                 console.error("خطأ الحفظ:", e);
-                statusEl.innerText = "خطأ بالحفظ ⚠️";
-                alert("تعذر الحفظ السحابي، تأكد من الاتصال بالإنترنت.");
+                statusEl.innerText = "محفوظ محلياً (تعذر الاتصال بالسحابة) ⚠️";
+                statusEl.className = "text-xs bg-amber-600 text-white px-3 py-1 rounded-full font-semibold";
+                alert("تم حفظ بياناتك محلياً في المتصفح ولن تضيع، ولكن تعذر الوصول إلى السحابة حالياً.");
             }
         }
 
@@ -901,6 +1164,7 @@
                     delete schoolDb.grades[sub][oldName];
                 }
             });
+            persistLocally();
             renderTable();
         }
 
@@ -910,23 +1174,36 @@
             if (name && name.trim() !== "") {
                 const cleanName = name.trim();
                 if (!classStudentsMap[currentClass]) classStudentsMap[currentClass] = [];
-                classStudentsMap[currentClass].push(cleanName);
+                if (deletedStudentsMap[currentClass]) {
+                    deletedStudentsMap[currentClass] = deletedStudentsMap[currentClass].filter(n => n !== cleanName);
+                }
+                if (!classStudentsMap[currentClass].includes(cleanName)) {
+                    classStudentsMap[currentClass].push(cleanName);
+                }
                 subjects.forEach(sub => {
                     if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
-                    schoolDb.grades[sub][cleanName] = [0,0,0,0,0,0,0,0];
+                    if(!schoolDb.grades[sub][cleanName]) {
+                        schoolDb.grades[sub][cleanName] = [0,0,0,0,0,0,0,0];
+                    }
                 });
+                persistLocally();
                 renderTable();
             }
         }
 
         window.deleteStudent = function(className, studentName) {
             if(confirm(`هل أنت متأكد من حذف الطالب ${studentName} نهائياً من هذا الصف وجميع المواد؟`)) {
+                if (!deletedStudentsMap[className]) deletedStudentsMap[className] = [];
+                if (!deletedStudentsMap[className].includes(studentName)) {
+                    deletedStudentsMap[className].push(studentName);
+                }
                 classStudentsMap[className] = classStudentsMap[className].filter(s => s !== studentName);
                 subjects.forEach(sub => {
                     if(schoolDb.grades[sub]) {
                         delete schoolDb.grades[sub][studentName];
                     }
                 });
+                persistLocally();
                 renderTable();
             }
         }
@@ -969,28 +1246,35 @@
                     let namePart = cleaned.replace(/[\d.]+/g, '').trim();
                     if(!namePart) namePart = cleaned;
                     
-                    if(namePart && !classStudentsMap[currentClass].includes(namePart)) {
-                        classStudentsMap[currentClass].push(namePart);
-                        subjects.forEach(sub => {
-                            if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
-                            schoolDb.grades[sub][namePart] = [0,0,0,0,0,0,0,0];
-                        });
-                        addedCount++;
+                    if(namePart) {
+                        if (deletedStudentsMap[currentClass]) {
+                            deletedStudentsMap[currentClass] = deletedStudentsMap[currentClass].filter(n => n !== namePart);
+                        }
+                        if(!classStudentsMap[currentClass].includes(namePart)) {
+                            classStudentsMap[currentClass].push(namePart);
+                            subjects.forEach(sub => {
+                                if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+                                if(!schoolDb.grades[sub][namePart]) {
+                                    schoolDb.grades[sub][namePart] = [0,0,0,0,0,0,0,0];
+                                }
+                            });
+                            addedCount++;
+                        }
                     }
                 }
             });
 
+            persistLocally();
             closeImportModal();
             renderTable();
-            alert(`تم استيراد وإضافة ${addedCount} طالب بنجاح إلى الصف: ${currentClass}`);
+            alert(`تم استيراد وإضافة ${addedCount} طالب وحفظهم بنجاح إلى الصف: ${currentClass}`);
         }
 
-        window.updateReportStudentsList = async function() {
+        window.updateReportStudentsList = function() {
             const selectedClass = document.getElementById('reportClassFilter').value;
             const studentSelect = document.getElementById('studentSelectReport');
+            const prevValue = studentSelect.value;
             studentSelect.innerHTML = '';
-            
-            await fetchAllSubjectsDataBackground();
 
             const students = classStudentsMap[selectedClass] || [];
             students.forEach((student, idx) => {
@@ -999,6 +1283,9 @@
                 opt.innerText = `[تسلسل ${toArabicDigits(idx + 1)}] ${student}`;
                 studentSelect.appendChild(opt);
             });
+            if (prevValue && students.includes(prevValue)) {
+                studentSelect.value = prevValue;
+            }
             generateStudentReport();
         }
 
@@ -1010,6 +1297,7 @@
             if(mode === 'single') document.getElementById('singleStudentDiv').classList.remove('hidden');
             if(mode === 'range') document.getElementById('rangeSelectDiv').classList.remove('hidden');
             
+            generateStudentReport();
             await fetchAllSubjectsDataBackground();
             generateStudentReport();
         }
@@ -1229,11 +1517,8 @@
             });
         }
 
-        document.getElementById('globalAcademicYear').addEventListener('change', function() {
-            loadSubjectData();
-            if(!document.getElementById('tab-report').classList.contains('hidden')) {
-                updateReportStudentsList();
-            }
+        window.addEventListener('beforeunload', () => {
+            persistLocally();
         });
 
         window.loadSubjectDate = function() {
@@ -1241,6 +1526,7 @@
         }
 
         window.onload = function() {
+            loadYearsRegistry();
             loadSubjectData();
         }
     </script>
