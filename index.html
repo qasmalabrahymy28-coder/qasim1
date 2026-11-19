@@ -15,7 +15,11 @@
                 margin: 4mm !important; 
             }
 
-            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed !important; }
+            /* منع قص النصوص والأسماء وتنظيم التفاف الكلمات عند الطباعة */
+            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; }
+            #reportsContainer table { table-layout: fixed !important; }
+            #subjectTable { table-layout: auto !important; width: 100% !important; }
+
             tr { break-inside: avoid !important; page-break-inside: avoid !important; }
             thead { display: table-header-group !important; }
             tfoot { display: table-footer-group !important; }
@@ -53,15 +57,53 @@
                 padding: 0 !important;
             }
 
-            th, td { border: 1.5px solid #000 !important; padding: 3px 0.5px !important; text-align: center !important; overflow: hidden !important; word-break: break-all !important; }
-            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10.5px !important; }
+            th, td { 
+                border: 1.5px solid #000 !important; 
+                padding: 3px 2px !important; 
+                text-align: center !important; 
+                overflow: visible !important; 
+                word-break: keep-all !important; 
+                overflow-wrap: break-word !important;
+                white-space: normal !important;
+            }
+            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10.5px !important; line-height: 1.2 !important; }
             
+            /* إظهار اسم الطالب كاملاً دون إخفاء في سجل الدرجات */
+            #subjectTable .student-name-cell {
+                min-width: 175px !important;
+                width: 24% !important;
+                text-align: right !important;
+                padding-right: 5px !important;
+                white-space: nowrap !important;
+            }
+            #subjectTable .student-name-input {
+                display: none !important;
+            }
+            #subjectTable .print-student-name {
+                display: inline-block !important;
+                font-weight: bold !important;
+                font-size: 11.5px !important;
+                color: #000 !important;
+                text-align: right !important;
+                white-space: nowrap !important;
+            }
+
             .header-input { display: none !important; }
-            .print-header-text { display: block !important; font-weight: bold !important; font-size: 11px !important; color: #000 !important; text-align: center !important; }
+            .print-header-text { 
+                display: block !important; 
+                font-weight: bold !important; 
+                font-size: 10.5px !important; 
+                color: #000 !important; 
+                text-align: center !important; 
+                line-height: 1.25 !important;
+                word-break: keep-all !important;
+                white-space: normal !important;
+            }
             
-            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 12px !important; font-weight: bold !important; width: 100% !important; resize: none !important; overflow: hidden !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 12px !important; font-weight: bold !important; width: 100% !important; resize: none !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
         }
         .print-header-text { display: none; }
+        .print-student-name { display: none; }
         .header-input {
             width: 100%;
             background-color: transparent;
@@ -148,7 +190,7 @@
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-slate-400 pb-6">
                 <div class="p-4 bg-indigo-50 border-b border-indigo-200 flex justify-between items-center">
                     <h3 id="currentSubjectTitle" class="font-bold text-indigo-900 text-sm md:text-base">سجل درجات المادة</h3>
-                    <span class="text-xs text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200">حفظ تلقائي مستمر</span>
+                    <span class="text-xs text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200 no-print">حفظ تلقائي مستمر</span>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -162,9 +204,9 @@
                                     <textarea id="head_col_no" oninput="updateHeader('col_no', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت</textarea>
                                     <span class="print-header-text">ت</span>
                                 </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 min-w-[200px] hover:bg-slate-300 transition-colors align-middle text-right">
+                                <th rowspan="2" class="p-0 border-r border-slate-400 min-w-[200px] student-name-cell hover:bg-slate-300 transition-colors align-middle text-right">
                                     <textarea id="head_col_name" oninput="updateHeader('col_name', this.value)" class="header-input h-10 text-[10px] md:text-xs text-right pr-2">اسم الطالب</textarea>
-                                    <span class="print-header-text">اسم الطالب</span>
+                                    <span class="print-header-text text-right pr-2">اسم الطالب</span>
                                 </th>
                                 <th colspan="4" class="p-0 border-r border-slate-400 bg-blue-100 hover:bg-blue-200 transition-colors">
                                     <textarea id="head_top_1" oninput="updateHeader('top_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الأول</textarea>
@@ -193,35 +235,35 @@
                                 <th rowspan="2" class="p-2 no-print w-12">حذف</th>
                             </tr>
                             <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 align-middle">
-                                <th class="p-0 border-r border-slate-400 bg-blue-50 w-12 hover:bg-blue-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 min-w-[48px] hover:bg-blue-100 transition-colors">
                                     <textarea id="head_bot_1" oninput="updateHeader('bot_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ١</textarea>
                                     <span class="print-header-text">ت ١</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-50 w-12 hover:bg-blue-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 min-w-[48px] hover:bg-blue-100 transition-colors">
                                     <textarea id="head_bot_2" oninput="updateHeader('bot_2', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ٢</textarea>
                                     <span class="print-header-text">ت ٢</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-50 w-12 hover:bg-blue-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-50 min-w-[48px] hover:bg-blue-100 transition-colors">
                                     <textarea id="head_bot_3" oninput="updateHeader('bot_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">ك ١</textarea>
                                     <span class="print-header-text">ك ١</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-200 w-14 hover:bg-blue-300 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-blue-200 min-w-[54px] hover:bg-blue-300 transition-colors">
                                     <textarea id="head_bot_4" oninput="updateHeader('bot_4', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea>
                                     <span class="print-header-text">المعدل</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50 w-12 hover:bg-emerald-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 min-w-[48px] hover:bg-emerald-100 transition-colors">
                                     <textarea id="head_bot_5" oninput="updateHeader('bot_5', this.value)" class="header-input h-10 text-[10px] md:text-xs">آذار</textarea>
                                     <span class="print-header-text">آذار</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50 w-12 hover:bg-emerald-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 min-w-[48px] hover:bg-emerald-100 transition-colors">
                                     <textarea id="head_bot_6" oninput="updateHeader('bot_6', this.value)" class="header-input h-10 text-[10px] md:text-xs">نيسان</textarea>
                                     <span class="print-header-text">نيسان</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50 w-12 hover:bg-emerald-100 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-50 min-w-[48px] hover:bg-emerald-100 transition-colors">
                                     <textarea id="head_bot_7" oninput="updateHeader('bot_7', this.value)" class="header-input h-10 text-[10px] md:text-xs">أيار</textarea>
                                     <span class="print-header-text">أيار</span>
                                 </th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-200 w-14 hover:bg-emerald-300 transition-colors">
+                                <th class="p-0 border-r border-slate-400 bg-emerald-200 min-w-[54px] hover:bg-emerald-300 transition-colors">
                                     <textarea id="head_bot_8" oninput="updateHeader('bot_8', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea>
                                     <span class="print-header-text">المعدل</span>
                                 </th>
@@ -421,7 +463,7 @@
 
         let customHeaders = {
             col_no: 'ت', col_name: 'اسم الطالب', rep_sub: 'الدروس', rep_note: 'الملاحظات',
-            top_1: 'النصف الاول', top_2: 'نصف السنة', top_3: 'النصف الثاني',
+            top_1: 'النصف الأول', top_2: 'نصف السنة', top_3: 'النصف الثاني',
             top_4: 'المعدل السنوي', top_5: 'الامتحان النهائي', top_6: 'الدرجة النهائية',
             bot_1: 'ت ١', bot_2: 'ت ٢', bot_3: 'ك ١', bot_4: 'المعدل',
             bot_5: 'آذار', bot_6: 'نيسان', bot_7: 'أيار', bot_8: 'المعدل'
@@ -1000,7 +1042,10 @@
                         <input type="checkbox" class="student-checkbox w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500" value="${student}">
                     </td>
                     <td class="p-2 border-b border-r border-slate-400 font-bold">${toArabicDigits(index + 1)}</td>
-                    <td class="p-2 border-b border-r border-slate-400 text-right"><input type="text" value="${student}" onchange="updateStudentName('${currentClass}', ${index}, this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-bold text-slate-900 text-sm md:text-base outline-none focus:ring-2 focus:ring-indigo-500"></td>
+                    <td class="p-2 border-b border-r border-slate-400 text-right student-name-cell">
+                        <input type="text" value="${student}" onchange="updateStudentName('${currentClass}', ${index}, this.value)" class="student-name-input w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-bold text-slate-900 text-sm md:text-base outline-none focus:ring-2 focus:ring-indigo-500">
+                        <span class="print-student-name">${student}</span>
+                    </td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[0] !== 0 ? g[0] : ''}" oninput="updateGrade('${currentSub}', '${student}', 0, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[1] !== 0 ? g[1] : ''}" oninput="updateGrade('${currentSub}', '${student}', 1, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[2] !== 0 ? g[2] : ''}" oninput="updateGrade('${currentSub}', '${student}', 2, this)" class="w-12 text-center bg-slate-50 rounded border text-lg font-black"></td>
@@ -1426,19 +1471,19 @@
 
                     tableRowsHtml += `
                         <tr>
-                            <td class="p-1 border border-slate-600 font-bold text-right text-slate-900 text-[11px] md:text-[12px] w-[21%]">${item.sub}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]">${item.g[0] !== 0 ? toArabicDigits(item.g[0]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="تشرين الأول">${item.g[1] !== 0 ? toArabicDigits(item.g[1]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]">${item.g[2] !== 0 ? toArabicDigits(item.g[2]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-blue-950 bg-blue-50/60 text-[11.5px] md:text-[12.5px] w-[6%]">${toArabicDigits(item.m1)}</td>
-                            <td class="p-1 border border-slate-600 bg-amber-50 font-normal text-slate-950 text-[11.5px] md:text-[12.5px] w-[6.5%]">${item.g[3] !== 0 ? toArabicDigits(item.g[3]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="شباط">${item.g[4] !== 0 ? toArabicDigits(item.g[4]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="آذار">${item.g[5] !== 0 ? toArabicDigits(item.g[5]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11.5px] md:text-[12.5px] w-[5.5%]" title="نيسان">${item.g[6] !== 0 ? toArabicDigits(item.g[6]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-emerald-950 bg-emerald-50/60 text-[11.5px] md:text-[12.5px] w-[6%]">${toArabicDigits(item.m2)}</td>
-                            <td class="p-1 border border-slate-600 font-normal text-purple-950 bg-purple-50/60 text-[11.5px] md:text-[12.5px] w-[6.5%]" title="المعدل السنوي">${annualTxt}</td>
-                            <td class="p-1 border border-slate-600 bg-rose-50 font-normal text-slate-950 text-[11.5px] md:text-[12.5px] w-[6.5%]" title="الامتحان النهائي">${item.g[7] !== 0 ? toArabicDigits(item.g[7]) : '٠'}</td>
-                            <td class="p-1 border border-slate-600 bg-indigo-50 font-normal text-indigo-950 text-[11.5px] md:text-[12.5px] w-[7%]" title="الدرجة النهائية">${finalTxt}</td>
+                            <td class="p-1 border border-slate-600 font-bold text-right text-slate-900 text-[11px] md:text-[12px] w-[20%]">${item.sub}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[0] !== 0 ? toArabicDigits(item.g[0]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[1] !== 0 ? toArabicDigits(item.g[1]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[2] !== 0 ? toArabicDigits(item.g[2]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-blue-950 bg-blue-50/60 text-[11px] md:text-[12px] w-[6%]">${toArabicDigits(item.m1)}</td>
+                            <td class="p-1 border border-slate-600 bg-amber-50 font-normal text-slate-950 text-[11px] md:text-[12px] w-[6.5%]">${item.g[3] !== 0 ? toArabicDigits(item.g[3]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[4] !== 0 ? toArabicDigits(item.g[4]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[5] !== 0 ? toArabicDigits(item.g[5]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-slate-900 text-[11px] md:text-[12px] w-[5.8%]">${item.g[6] !== 0 ? toArabicDigits(item.g[6]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-emerald-950 bg-emerald-50/60 text-[11px] md:text-[12px] w-[6%]">${toArabicDigits(item.m2)}</td>
+                            <td class="p-1 border border-slate-600 font-normal text-purple-950 bg-purple-50/60 text-[11px] md:text-[12px] w-[6.5%]">${annualTxt}</td>
+                            <td class="p-1 border border-slate-600 bg-rose-50 font-normal text-slate-950 text-[11px] md:text-[12px] w-[6.5%]">${item.g[7] !== 0 ? toArabicDigits(item.g[7]) : '٠'}</td>
+                            <td class="p-1 border border-slate-600 bg-indigo-50 font-normal text-indigo-950 text-[11px] md:text-[12px] w-[6.7%]">${finalTxt}</td>
                             <td class="p-1 border border-slate-600 ${noteColor} text-[10px] md:text-[11px] w-[9%]">${note}</td>
                         </tr>
                     `;
@@ -1460,27 +1505,27 @@
                     </div>
 
                     <div class="overflow-x-auto my-0.5">
-                        <table class="w-full text-center border-collapse text-[11px] border border-slate-800 table-fixed">
+                        <table class="w-full text-center border-collapse text-[10.5px] border border-slate-800 table-fixed">
                             <thead>
                                 <tr class="bg-slate-200 text-slate-900 font-bold border-b border-slate-400">
-                                    <th rowspan="2" class="p-1 border border-slate-600 w-[21%]">الدروس</th>
-                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-blue-100 font-bold w-[23%]">النصف الأول</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 w-[20%]">${customHeaders.rep_sub || 'الدروس'}</th>
+                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-blue-100 font-bold w-[23.4%]">${customHeaders.top_1 || 'النصف الأول'}</th>
                                     <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-amber-100 text-slate-900 w-[6.5%]">نصف<br>السنة</th>
-                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-emerald-100 font-bold w-[23%]">النصف الثاني</th>
+                                    <th colspan="4" class="p-0.5 border border-slate-600 bg-emerald-100 font-bold w-[23.4%]">${customHeaders.top_3 || 'النصف الثاني'}</th>
                                     <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-purple-100 text-slate-900 w-[6.5%]">المعدل<br>السنوي</th>
                                     <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-rose-100 text-slate-900 w-[6.5%]">الامتحان<br>النهائي</th>
-                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-indigo-100 text-indigo-950 w-[7%]">الدرجة<br>النهائية</th>
-                                    <th rowspan="2" class="p-1 border border-slate-600 w-[9%]">الملاحظات</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 font-bold bg-indigo-100 text-indigo-950 w-[6.7%]">الدرجة<br>النهائية</th>
+                                    <th rowspan="2" class="p-1 border border-slate-600 w-[9%]">${customHeaders.rep_note || 'الملاحظات'}</th>
                                 </tr>
-                                <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 text-[10px]">
-                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.5%]">ت ١</th>
-                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.5%]">ت ٢</th>
-                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.5%]">ك ١</th>
-                                    <th class="p-0.5 border border-slate-600 bg-blue-200 font-bold w-[6%]">المعدل</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.5%]">شباط</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.5%]">آذار</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.5%]">نيسان</th>
-                                    <th class="p-0.5 border border-slate-600 bg-emerald-200 font-bold w-[6%]">المعدل</th>
+                                <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 text-[9.5px]">
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.8%]">${customHeaders.bot_1 || 'ت ١'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.8%]">${customHeaders.bot_2 || 'ت ٢'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-50 w-[5.8%]">${customHeaders.bot_3 || 'ك ١'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-blue-200 font-bold w-[6%]">${customHeaders.bot_4 || 'المعدل'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.8%]">${customHeaders.bot_5 || 'آذار'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.8%]">${customHeaders.bot_6 || 'نيسان'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-50 w-[5.8%]">${customHeaders.bot_7 || 'أيار'}</th>
+                                    <th class="p-0.5 border border-slate-600 bg-emerald-200 font-bold w-[6%]">${customHeaders.bot_8 || 'المعدل'}</th>
                                 </tr>
                             </thead>
                             <tbody>
