@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برنامج إدارة رصد درجات الطلاب والنتائج المدرسية</title>
-    <!-- تضمين Tailwind CSS عبر CDN -->
+    <title>برنامج إدارة رصد درجات الطلاب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #subjectTable {
-            table-layout: fixed;
-            width: 100%;
-        }
+        #subjectTable { table-layout: fixed; width: 100%; }
         #subjectTable .col-check { width: 36px; }
         #subjectTable .col-seq { width: 38px; }
         #subjectTable .col-name { width: 210px; }
@@ -20,386 +16,156 @@
         @media print {
             body { background: white; margin: 0; padding: 0; }
             .no-print { display: none !important; }
-            
-            @page { 
-                size: A4 portrait; 
-                margin: 4mm !important; 
-            }
-
-            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed !important; }
-
+            @page { size: A4 portrait; margin: 4mm !important; }
+            table { font-size: 11px !important; border-collapse: collapse !important; width: 100% !important; }
             #subjectTable .col-seq { width: 4.5% !important; }
-            #subjectTable .col-name { width: 23.5% !important; text-align: right !important; padding-right: 4px !important; }
+            #subjectTable .col-name { width: 23.5% !important; text-align: right !important; }
             #subjectTable .col-grade { width: 6% !important; }
-
-            tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+            tr { break-inside: avoid !important; }
             thead { display: table-header-group !important; }
             tfoot { display: table-footer-group !important; }
-
-            .print-card { 
-                break-inside: avoid !important; 
-                page-break-inside: avoid !important; 
-                height: 134mm !important; 
-                max-height: 134mm !important;
-                width: 100% !important;
-                margin: 0 auto 8mm auto !important; 
-                padding: 1.5mm 3mm 1mm 3mm !important;
-                border: 2px solid #000 !important;
-                box-shadow: none !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                box-sizing: border-box !important;
-            }
-
-            .print-card:nth-child(even) {
-                break-after: page !important;
-                page-break-after: always !important;
-                margin-bottom: 0 !important;
-            }
-
-            #reportsContainer {
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: flex-start !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            th, td { 
-                border: 1.5px solid #000 !important; 
-                padding: 2.5px 1px !important; 
-                text-align: center !important; 
-                overflow: visible !important; 
-                word-break: keep-all !important; 
-                overflow-wrap: break-word !important;
-                white-space: normal !important;
-            }
-            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10px !important; line-height: 1.2 !important; }
-            
-            #subjectTable .student-name-cell {
-                text-align: right !important;
-                padding-right: 5px !important;
-                white-space: nowrap !important;
-            }
-            #subjectTable .student-name-input {
-                display: none !important;
-            }
-            #subjectTable .print-student-name {
-                display: inline-block !important;
-                font-weight: bold !important;
-                font-size: 11px !important;
-                color: #000 !important;
-                text-align: right !important;
-                white-space: nowrap !important;
-            }
-
-            .header-input { display: none !important; }
-            .print-header-text { 
-                display: block !important; 
-                font-weight: bold !important; 
-                font-size: 10px !important; 
-                color: #000 !important; 
-                text-align: center !important; 
-                line-height: 1.25 !important;
-                word-break: keep-all !important;
-                white-space: normal !important;
-            }
-            
-            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 11.5px !important; font-weight: bold !important; width: 100% !important; resize: none !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+            th, td { border: 1.5px solid #000 !important; padding: 2.5px 1px !important; text-align: center !important; }
+            th { background-color: #e2e8f0 !important; color: #000 !important; font-weight: bold !important; font-size: 10px !important; }
+            .student-name-input { display: none !important; }
+            .print-student-name { display: inline-block !important; font-weight: bold !important; font-size: 11px !important; color: #000 !important; }
+            input, textarea { border: none !important; background: transparent !important; text-align: center !important; font-size: 11.5px !important; font-weight: bold !important; width: 100% !important; }
         }
-        .print-header-text { display: none; }
         .print-student-name { display: none; }
-        .header-input {
-            width: 100%;
-            background-color: transparent;
-            text-align: center;
-            font-weight: bold;
-            resize: none;
-            outline: none;
-            overflow: hidden;
-            line-height: 1.3;
-            padding: 4px 2px;
-            margin: 0;
-            transition: background-color 0.2s;
-        }
-        .header-input:focus {
-            background-color: white;
-            border-radius: 4px;
-            box-shadow: inset 0 0 0 1px #6366f1;
-        }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-6">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4">
 
     <div class="max-w-7xl mx-auto">
-        <!-- رأس البرنامج -->
-        <header class="bg-indigo-900 text-white rounded-2xl p-4 md:p-6 mb-6 shadow-md flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+        <!-- الرأس -->
+        <header class="bg-indigo-900 text-white rounded-2xl p-4 mb-6 shadow-md flex flex-wrap justify-between items-center gap-4 no-print">
             <div>
-                <h1 class="text-xl md:text-2xl font-bold">برنامج رصد ونتائج الطلاب (السحابي المتكامل)</h1>
-                <p class="text-indigo-200 text-xs md:text-sm mt-1">تصميم وإعداد المدرس المساعد: قاسم ناظم موسى الابراهيمي</p>
+                <h1 class="text-xl font-bold">برنامج رصد ونتائج الطلاب</h1>
+                <p class="text-indigo-200 text-xs mt-1">إعداد: قاسم ناظم موسى</p>
             </div>
-            <div class="flex items-center gap-3 flex-wrap">
-                <div class="flex items-center gap-1.5 bg-indigo-800 px-3 py-1.5 rounded-xl border border-indigo-700 flex-wrap">
-                    <label class="text-xs text-indigo-200 font-bold">العام الدراسي:</label>
-                    <input type="text" id="globalAcademicYear" list="academicYearsDatalist" value="٢٠٢٦ - ٢٠٢٧" onchange="onAcademicYearChange()" onkeypress="if(event.key==='Enter'){this.blur(); onAcademicYearChange();}" placeholder="مثال: ٢٠٢٧ - ٢٠٢٨" class="bg-indigo-950 text-white text-xs font-bold px-2.5 py-1 rounded-lg outline-none border border-indigo-600 w-36 text-center">
-                    <datalist id="academicYearsDatalist"></datalist>
-                    <button type="button" onclick="openCustomYearModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-lg transition">＋ سنة</button>
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-800 px-3 py-1.5 rounded-xl border border-indigo-700 flex items-center gap-2">
+                    <label class="text-xs text-indigo-200 font-bold">العام:</label>
+                    <input type="text" id="globalAcademicYear" value="٢٠٢٦ - ٢٠٢٧" onchange="loadSubjectData()" class="bg-indigo-950 text-white text-xs font-bold px-2 py-1 rounded text-center w-28 outline-none">
                 </div>
-
-                <span id="syncStatus" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold">جاهز للعمل ✨</span>
                 <div class="flex gap-2">
-                    <button onclick="switchTab('entry')" id="btn-entry" class="bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition">إدخال الدرجات</button>
-                    <button onclick="switchTab('report')" id="btn-report" class="bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition opacity-70">نتيجة الطالب الشاملة</button>
+                    <button onclick="switchTab('entry')" id="btn-entry" class="bg-indigo-700 px-4 py-2 rounded-xl text-xs font-medium transition">إدخال الدرجات</button>
+                    <button onclick="switchTab('report')" id="btn-report" class="bg-indigo-800 px-4 py-2 rounded-xl text-xs font-medium transition opacity-70">النتيجة الشاملة</button>
                 </div>
             </div>
         </header>
 
-        <!-- قسم إدخال الدرجات -->
+        <!-- قسم الإدخال -->
         <section id="tab-entry" class="space-y-6">
-            <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm no-print flex flex-wrap gap-4 items-center justify-between">
+            <div class="bg-white rounded-2xl p-4 shadow-sm no-print flex flex-wrap gap-4 items-center justify-between">
                 <div class="flex flex-wrap gap-4 items-center">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">اختر المادة الدراسية:</label>
-                        <select id="subjectSelect" onchange="loadSubjectData()" class="border rounded-xl px-3 py-2 bg-slate-50 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">المادة الدراسية:</label>
+                        <select id="subjectSelect" onchange="loadSubjectData()" class="border rounded-xl px-3 py-2 bg-slate-50 text-sm font-medium outline-none">
                             <option value="التربية الإسلامية">التربية الإسلامية</option>
                             <option value="اللغة العربية">اللغة العربية</option>
-                            <option value="اللغة الانكليزية">اللغة الانكليزية</option>
-                            <option value="الرياضيات الحديثة">الرياضيات الحديثة</option>
-                            <option value="الاجتماعيات">الاجتماعيات</option>
                             <option value="العلوم والتربية الصحية" selected>العلوم والتربية الصحية</option>
-                            <option value="التربية الرياضية">التربية الرياضية</option>
-                            <option value="التربية الفنية والنشيد">التربية الفنية والنشيد</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1">الصف والشعبة:</label>
-                        <select id="classSectionSelect" onchange="loadSubjectData()" class="border rounded-xl px-3 py-2 bg-slate-50 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="الخامس الابتدائي - أ" selected>الخامس الابتدائي - أ</option>
-                            <option value="الخامس الابتدائي - ب">الخامس الابتدائي - ب</option>
-                            <option value="السادس الابتدائي - أ">السادس الابتدائي - أ</option>
-                            <option value="السادس الابتدائي - ب">السادس الابتدائي - ب</option>
+                        <select id="classSectionSelect" onchange="loadSubjectData()" class="border rounded-xl px-3 py-2 bg-slate-50 text-sm font-medium outline-none">
+                            <option value="الخامس الابتدائي - أ">الخامس الابتدائي - أ</option>
+                            <option value="الخامس الابتدائي - ب" selected>الخامس الابتدائي - ب</option>
                         </select>
                     </div>
                 </div>
                 <div class="flex gap-2 flex-wrap items-center">
-                    <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition flex items-center gap-1">🖨️ طباعة السجل</button>
-                    <button onclick="openImportModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition flex items-center gap-1">📥 استيراد بيانات</button>
-                    <button onclick="addNewStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">➕ إضافة طالب</button>
-                    <button onclick="deleteSelectedStudents()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition flex items-center gap-1">🗑️ حذف المحدد</button>
-                    <button onclick="saveDataToCloud()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow transition">💾 حفظ في السحابة ☁️</button>
+                    <button onclick="window.print()" class="bg-emerald-600 text-white px-3 py-2 rounded-xl text-sm font-medium shadow">🖨️ طباعة</button>
+                    <button onclick="openImportModal()" class="bg-purple-600 text-white px-3 py-2 rounded-xl text-sm font-medium shadow">📥 استيراد بيانات</button>
+                    <button onclick="addNewStudent()" class="bg-indigo-600 text-white px-3 py-2 rounded-xl text-sm font-medium shadow">➕ إضافة طالب</button>
+                    <button onclick="deleteSelectedStudents()" class="bg-rose-600 text-white px-3 py-2 rounded-xl text-sm font-medium shadow">🗑️ حذف المحدد</button>
                 </div>
             </div>
 
-            <!-- جدول الدرجات -->
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-slate-400 pb-6">
-                <div class="p-4 bg-indigo-50 border-b border-indigo-200 flex justify-between items-center">
-                    <h3 id="currentSubjectTitle" class="font-bold text-indigo-900 text-sm md:text-base">سجل درجات المادة</h3>
-                    <span class="text-xs text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200 no-print">حفظ تلقائي</span>
+            <!-- الجدول -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-slate-400">
+                <div class="p-4 bg-indigo-50 border-b border-indigo-200">
+                    <h3 id="currentSubjectTitle" class="font-bold text-indigo-900 text-sm">سجل درجات</h3>
                 </div>
-                
                 <div class="overflow-x-auto">
-                    <table class="w-full text-center border-collapse text-xs md:text-sm border border-slate-400" id="subjectTable">
-                        <colgroup>
-                            <col class="col-check no-print">
-                            <col class="col-seq">
-                            <col class="col-name">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-grade">
-                            <col class="col-del no-print">
-                        </colgroup>
+                    <table class="w-full text-center border-collapse text-xs border border-slate-400" id="subjectTable">
                         <thead>
-                            <tr class="bg-slate-200 text-slate-900 border-b border-slate-400 align-middle">
-                                <th rowspan="2" class="p-2 border-r border-slate-400 no-print">
-                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
-                                </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 align-middle">
-                                    <textarea id="head_col_no" oninput="updateHeader('col_no', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت</textarea>
-                                    <span class="print-header-text">ت</span>
-                                </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 student-name-cell align-middle text-right">
-                                    <textarea id="head_col_name" oninput="updateHeader('col_name', this.value)" class="header-input h-10 text-[10px] md:text-xs text-right pr-2">اسم الطالب</textarea>
-                                    <span class="print-header-text text-right pr-2">اسم الطالب</span>
-                                </th>
-                                <th colspan="4" class="p-0 border-r border-slate-400 bg-blue-100">
-                                    <textarea id="head_top_1" oninput="updateHeader('top_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الأول</textarea>
-                                    <span class="print-header-text">النصف الأول</span>
-                                </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-amber-100 align-middle">
-                                    <textarea id="head_top_2" oninput="updateHeader('top_2', this.value)" class="header-input h-20 text-[10px] md:text-xs">نصف السنة</textarea>
-                                    <span class="print-header-text">نصف السنة</span>
-                                </th>
-                                <th colspan="4" class="p-0 border-r border-slate-400 bg-emerald-100">
-                                    <textarea id="head_top_3" oninput="updateHeader('top_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">النصف الثاني</textarea>
-                                    <span class="print-header-text">النصف الثاني</span>
-                                </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-purple-100 align-middle">
-                                    <textarea id="head_top_4" oninput="updateHeader('top_4', this.value)" class="header-input h-20 text-[10px] md:text-xs">المعدل السنوي</textarea>
-                                    <span class="print-header-text">المعدل السنوي</span>
-                                </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-rose-100 align-middle">
-                                    <textarea id="head_top_5" oninput="updateHeader('top_5', this.value)" class="header-input h-20 text-[10px] md:text-xs">الامتحان النهائي</textarea>
-                                    <span class="print-header-text">الامتحان النهائي</span>
-                                </th>
-                                <th rowspan="2" class="p-0 border-r border-slate-400 bg-indigo-100 align-middle">
-                                    <textarea id="head_top_6" oninput="updateHeader('top_6', this.value)" class="header-input h-20 text-indigo-950 text-[10px] md:text-xs">الدرجة النهائية</textarea>
-                                    <span class="print-header-text">الدرجة النهائية</span>
-                                </th>
+                            <tr class="bg-slate-200 border-b border-slate-400">
+                                <th rowspan="2" class="p-2 no-print"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th>
+                                <th rowspan="2" class="p-2 border-r border-slate-400">ت</th>
+                                <th rowspan="2" class="p-2 border-r border-slate-400 text-right">اسم الطالب</th>
+                                <th colspan="4" class="p-1 border-r border-slate-400 bg-blue-100">النصف الأول</th>
+                                <th rowspan="2" class="p-1 border-r border-slate-400 bg-amber-100">نصف السنة</th>
+                                <th colspan="4" class="p-1 border-r border-slate-400 bg-emerald-100">النصف الثاني</th>
+                                <th rowspan="2" class="p-1 border-r border-slate-400 bg-purple-100">المعدل السنوي</th>
+                                <th rowspan="2" class="p-1 border-r border-slate-400 bg-rose-100">الامتحان النهائي</th>
+                                <th rowspan="2" class="p-1 border-r border-slate-400 bg-indigo-100">الدرجة النهائية</th>
                                 <th rowspan="2" class="p-2 no-print">حذف</th>
                             </tr>
-                            <tr class="bg-slate-100 text-slate-800 border-b border-slate-400 align-middle">
-                                <th class="p-0 border-r border-slate-400 bg-blue-50"><textarea id="head_bot_1" oninput="updateHeader('bot_1', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ١</textarea><span class="print-header-text">ت ١</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-50"><textarea id="head_bot_2" oninput="updateHeader('bot_2', this.value)" class="header-input h-10 text-[10px] md:text-xs">ت ٢</textarea><span class="print-header-text">ت ٢</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-50"><textarea id="head_bot_3" oninput="updateHeader('bot_3', this.value)" class="header-input h-10 text-[10px] md:text-xs">ك ١</textarea><span class="print-header-text">ك ١</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-blue-200"><textarea id="head_bot_4" oninput="updateHeader('bot_4', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea><span class="print-header-text">المعدل</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50"><textarea id="head_bot_5" oninput="updateHeader('bot_5', this.value)" class="header-input h-10 text-[10px] md:text-xs">آذار</textarea><span class="print-header-text">آذار</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50"><textarea id="head_bot_6" oninput="updateHeader('bot_6', this.value)" class="header-input h-10 text-[10px] md:text-xs">نيسان</textarea><span class="print-header-text">نيسان</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-50"><textarea id="head_bot_7" oninput="updateHeader('bot_7', this.value)" class="header-input h-10 text-[10px] md:text-xs">أيار</textarea><span class="print-header-text">أيار</span></th>
-                                <th class="p-0 border-r border-slate-400 bg-emerald-200"><textarea id="head_bot_8" oninput="updateHeader('bot_8', this.value)" class="header-input h-10 text-[10px] md:text-xs">المعدل</textarea><span class="print-header-text">المعدل</span></th>
+                            <tr class="bg-slate-100 border-b border-slate-400">
+                                <th class="p-1 border-r border-slate-400 bg-blue-50">ت ١</th>
+                                <th class="p-1 border-r border-slate-400 bg-blue-50">ت ٢</th>
+                                <th class="p-1 border-r border-slate-400 bg-blue-50">ك ١</th>
+                                <th class="p-1 border-r border-slate-400 bg-blue-200">المعدل</th>
+                                <th class="p-1 border-r border-slate-400 bg-emerald-50">آذار</th>
+                                <th class="p-1 border-r border-slate-400 bg-emerald-50">نيسان</th>
+                                <th class="p-1 border-r border-slate-400 bg-emerald-50">أيار</th>
+                                <th class="p-1 border-r border-slate-400 bg-emerald-200">المعدل</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
-                        <tfoot id="tableFooter" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-400 text-[10px] md:text-xs"></tfoot>
+                        <tfoot id="tableFooter" class="bg-slate-100 font-bold border-t-2 border-slate-400 text-xs"></tfoot>
                     </table>
-                </div>
-
-                <div class="flex justify-between items-end mt-6 px-4 md:px-12 font-bold text-slate-800 text-xs md:text-sm">
-                    <div class="text-center">
-                        <p class="mb-1 text-slate-600 text-[11px] md:text-xs">توقيع مدير المدرسة</p>
-                        <input type="text" id="principalNameEntry" value="علي نجم عبد الامير" oninput="updatePrincipalName(this.value)" class="text-center font-black text-slate-900 bg-transparent border-b-2 border-slate-300 focus:border-indigo-500 outline-none w-32 md:w-48 pb-1">
-                    </div>
-                    <div class="text-center">
-                        <p class="mb-1 text-slate-600 text-[11px] md:text-xs">توقيع معلم المادة</p>
-                        <input type="text" id="teacherNameEntry" value="قاسم ناظم موسى" oninput="updateTeacherName(this.value)" class="text-center font-black text-slate-900 bg-transparent border-b-2 border-slate-300 focus:border-indigo-500 outline-none w-32 md:w-48 pb-1">
-                    </div>
                 </div>
             </div>
         </section>
 
         <!-- قسم التقارير -->
         <section id="tab-report" class="space-y-6 hidden">
-            <div class="bg-white rounded-2xl p-6 shadow-sm no-print flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="flex flex-wrap gap-4 items-center w-full md:w-3/4">
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">وضع العرض:</label>
-                        <select id="reportPrintMode" onchange="toggleReportMode()" class="w-full border rounded-xl px-3 py-2 bg-slate-50 font-medium outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                            <option value="single">طالب واحد</option>
-                            <option value="class">صف كامل</option>
-                            <option value="range">نطاق محدد</option>
-                        </select>
-                    </div>
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">الصف والشعبة:</label>
-                        <select id="reportClassFilter" onchange="onReportClassChanged()" class="w-full border rounded-xl px-3 py-2 bg-slate-50 font-medium outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                            <option value="الخامس الابتدائي - أ" selected>الخامس الابتدائي - أ</option>
-                            <option value="الخامس الابتدائي - ب">الخامس الابتدائي - ب</option>
-                            <option value="السادس الابتدائي - أ">السادس الابتدائي - أ</option>
-                            <option value="السادس الابتدائي - ب">السادس الابتدائي - ب</option>
-                        </select>
-                    </div>
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">المديرية:</label>
-                        <input type="text" id="directorateInput" value="المديرية العامة للتربية في محافظة النجف الاشرف" oninput="updateDirectorate(this.value)" class="w-full border rounded-xl px-2 py-2 bg-slate-50 font-bold text-indigo-900 outline-none text-xs text-center">
-                    </div>
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم المدرسة:</label>
-                        <input type="text" id="schoolNameInput" value="مدرسة غرناطة الابتدائية" oninput="updateSchoolName(this.value)" class="w-full border rounded-xl px-2 py-2 bg-slate-50 font-bold text-indigo-900 outline-none text-xs text-center">
-                    </div>
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">مرشد الصف:</label>
-                        <input type="text" id="classGuideInput" value="قاسم ناظم موسى" oninput="updateClassGuide(this.value)" class="w-full border rounded-xl px-2 py-2 bg-indigo-50 font-bold text-indigo-900 outline-none text-xs text-center">
-                    </div>
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">حد مواد الإكمال:</label>
-                        <select id="maxFailureAllowed" onchange="generateStudentReport()" class="w-full border rounded-xl px-2 py-2 bg-amber-50 font-bold text-amber-900 text-xs">
-                            <option value="2" selected>مادتين</option>
-                            <option value="3">3 مواد</option>
-                            <option value="4">4 مواد</option>
-                        </select>
-                    </div>
-                    <div class="w-full md:w-1/6">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">درجات القرار:</label>
-                        <select id="decisionGraceMode" onchange="generateStudentReport()" class="w-full border rounded-xl px-2 py-2 bg-emerald-50 font-bold text-emerald-900 text-xs">
-                            <option value="enabled" selected>مفعل</option>
-                            <option value="disabled">معطل</option>
-                        </select>
-                    </div>
-                    <div id="singleStudentDiv" class="w-full md:w-1/5">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اختر الطالب:</label>
-                        <select id="studentSelectReport" onchange="generateStudentReport()" class="w-full border rounded-xl px-2 py-2 bg-slate-50 font-medium outline-none text-sm"></select>
-                    </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm no-print flex items-center justify-between">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">اختر الطالب لعرض نتيجته:</label>
+                    <select id="studentSelectReport" onchange="generateStudentReport()" class="border rounded-xl px-3 py-2 bg-slate-50 font-medium outline-none text-sm w-64"></select>
                 </div>
-                <div class="flex gap-3 w-full md:w-auto">
-                    <button onclick="window.print()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-medium shadow text-sm flex items-center justify-center gap-2">
-                        🖨️ طباعة النتائج
-                    </button>
-                </div>
+                <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-medium text-sm">🖨️ طباعة النتيجة</button>
             </div>
             <div id="reportsContainer" class="space-y-4"></div>
         </section>
     </div>
 
-    <!-- Firebase SDK (Modular v10) عبر CDN -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <!-- نافذة الاستيراد -->
+    <div id="importModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
+            <h3 class="font-bold text-lg text-indigo-900 border-b pb-3">استيراد وإضافة بيانات الطلاب</h3>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1 text-sm">لصق أسماء الطلاب (كل طالب في سطر):</label>
+                <textarea id="importTextarea" rows="6" class="w-full border rounded-xl p-3 bg-slate-50 text-sm outline-none font-medium"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeImportModal()" class="bg-slate-200 text-slate-800 px-4 py-2 rounded-xl text-sm font-medium">إلغاء</button>
+                <button onclick="processImportData()" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-medium">إدراج الطلاب</button>
+            </div>
+        </div>
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPdgKqGw3Die0irgiOLQ3pnHSz21C_S6o",
-            authDomain: "school-grades-system-59f7c.firebaseapp.com",
-            projectId: "school-grades-system-59f7c",
-            storageBucket: "school-grades-system-59f7c.firebasestorage.app",
-            messagingSenderId: "439863496271",
-            appId: "1:439863496271:web:4ee836a1923ecb891d243a",
-            measurementId: "G-W80R5HNE3P"
-        };
+    <script>
+        const subjects = ['التربية الإسلامية', 'اللغة العربية', 'العلوم والتربية الصحية'];
+        const classesList = ['الخامس الابتدائي - أ', 'الخامس الابتدائي - ب'];
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const subjects = [
-            'التربية الإسلامية', 'اللغة العربية', 'اللغة الانكليزية', 
-            'الرياضيات الحديثة', 'الاجتماعيات', 'العلوم والتربية الصحية', 'التربية الرياضية', 'التربية الفنية والنشيد'
+        let defaultStudentsClassB = [
+            "تبارك حسين علي", "تقى باسم محمد", "جنات حيدر جاسم", "حيدر علاء حسين",
+            "رضا كرار كاظم", "رقية ميثم عبد الواحد", "زينب عقيل مهدي", "سارة احمد عبد",
+            "علي حسين جواد", "فاطمة حسن هادي", "محمد باقر قاسم", "مريم علاء كاظم",
+            "مصطفى احمد جاسم", "نور الهدى علي حسين", "هدى حيدر عبود", "يوسف كرار صاحب"
         ];
 
-        const classesList = [
-            "الخامس الابتدائي - أ", "الخامس الابتدائي - ب", "السادس الابتدائي - أ", "السادس الابتدائي - ب"
-        ];
-
-        let customHeaders = {
-            col_no: 'ت', col_name: 'اسم الطالب', rep_sub: 'الدروس', rep_note: 'الملاحظات',
-            top_1: 'النصف الأول', top_2: 'نصف السنة', top_3: 'النصف الثاني',
-            top_4: 'المعدل السنوي', top_5: 'الامتحان النهائي', top_6: 'الدرجة النهائية',
-            bot_1: 'ت ١', bot_2: 'ت ٢', bot_3: 'ك ١', bot_4: 'المعدل',
-            bot_5: 'آذار', bot_6: 'نيسان', bot_7: 'أيار', bot_8: 'المعدل'
+        let classStudentsMap = {
+            "الخامس الابتدائي - أ": ["طالب تجريبي 1", "طالب تجريبي 2"],
+            "الخامس الابتدائي - b": [...defaultStudentsClassB],
+            "الخامس الابتدائي - ب": [...defaultStudentsClassB]
         };
 
-        let globalPrincipalName = 'علي نجم عبد الامير';
-        let globalSchoolName = 'مدرسة غرناطة الابتدائية';
-        let globalDirectorate = 'المديرية العامة للتربية في محافظة النجف الاشرف';
-        let teachersMap = {};
-        subjects.forEach(sub => { teachersMap[sub] = 'قاسم ناظم موسى'; });
-
-        let classGuidesMap = {
-            "الخامس الابتدائي - أ": "قاسم ناظم موسى", "الخامس الابتدائي - ب": "قاسم ناظم موسى",
-            "السادس الابتدائي - أ": "قاسم ناظم موسى", "السادس الابتدائي - ب": "قاسم ناظم موسى"
-        };
-
-        let deletedStudentsMap = {};
-        classesList.forEach(c => { deletedStudentsMap[c] = []; });
-
-        let savedYearsList = ["٢٠٢٦ - ٢٠٢٧", "٢٠٢7 - ٢٠٢٨"];
+        let schoolDb = { grades: {} };
 
         function toArabicDigits(num) {
             if (num === undefined || num === null || isNaN(num) || num === '') return '٠';
@@ -407,75 +173,54 @@
             return String(num).replace(/\d/g, (digit) => arabicNumbers[digit]);
         }
 
-        function normalizeWesternDigits(str) {
-            const arabicToWestern = {
-                '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-                '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
-            };
+        normalizeWesternDigits = function(str) {
+            const arabicToWestern = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
             return String(str || '').replace(/[٠-٩]/g, d => arabicToWestern[d]);
         }
 
-        function persistLocally(academicYear = null) {
+        persistLocally = function() {
             try {
-                const yr = academicYear || document.getElementById('globalAcademicYear').value;
-                const payload = {
-                    customHeaders, globalPrincipalName, globalSchoolName, globalDirectorate,
-                    teachersMap, classGuidesMap, deletedStudentsMap, classStudentsMap,
-                    grades: schoolDb.grades, savedYearsList
-                };
+                const yr = document.getElementById('globalAcademicYear').value;
+                const payload = { classStudentsMap, grades: schoolDb.grades };
                 localStorage.setItem("qasim_db_" + normalizeWesternDigits(yr).replace(/\s+/g, ''), JSON.stringify(payload));
             } catch (err) {}
         }
 
-        function loadFromLocalStorage(academicYear) {
+        loadFromLocalStorage = function(academicYear) {
             try {
                 const raw = localStorage.getItem("qasim_db_" + normalizeWesternDigits(academicYear).replace(/\s+/g, ''));
                 if (!raw) return false;
                 const data = JSON.parse(raw);
-                if (data.customHeaders) customHeaders = { ...customHeaders, ...data.customHeaders };
-                if (data.globalPrincipalName) globalPrincipalName = data.globalPrincipalName;
-                if (data.globalSchoolName) globalSchoolName = data.globalSchoolName;
-                if (data.globalDirectorate) globalDirectorate = data.globalDirectorate;
-                if (data.teachersMap) teachersMap = { ...teachersMap, ...data.teachersMap };
-                if (data.classGuidesMap) classGuidesMap = { ...classGuidesMap, ...data.classGuidesMap };
+                if (data.classStudentsMap) classStudentsMap = data.classStudentsMap;
                 if (data.grades) schoolDb.grades = data.grades;
-                syncHeaderInputsFromState();
                 return true;
             } catch (err) { return false; }
         }
 
-        function syncHeaderInputsFromState() {
-            for (let key in customHeaders) {
-                let el = document.getElementById('head_' + key);
-                if (el) {
-                    el.value = customHeaders[key];
-                    const span = el.parentElement.querySelector('.print-header-text');
-                    if (span) span.innerText = customHeaders[key];
-                }
-            }
-        }
-
-        window.switchTab = async function(tab) {
+        window.switchTab = function(tab) {
             persistLocally();
             if(tab === 'entry') {
                 document.getElementById('tab-entry').classList.remove('hidden');
                 document.getElementById('tab-report').classList.add('hidden');
+                document.getElementById('btn-entry').className = "bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition";
+                document.getElementById('btn-report').className = "bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs font-medium transition opacity-70";
                 loadSubjectData();
             } else {
                 document.getElementById('tab-entry').classList.add('hidden');
                 document.getElementById('tab-report').classList.remove('hidden');
+                document.getElementById('btn-report').className = "bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition";
+                document.getElementById('btn-entry').className = "bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs font-medium transition opacity-70";
                 updateReportStudentsList();
             }
         }
 
-        window.updateGrade = function(subject, student, index, input) {
-            let val = input.value === "" ? 0 : parseFloat(input.value);
-            if(isNaN(val)) val = 0;
-            if(!schoolDb.grades[subject]) schoolDb.grades[subject] = {};
-            if(!schoolDb.grades[subject][student]) schoolDb.grades[subject][student] = [0,0,0,0,0,0,0,0];
-            schoolDb.grades[subject][student][index] = val;
+        window.loadSubjectData = function() {
+            const currentSub = document.getElementById('subjectSelect').value;
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const academicYear = document.getElementById('globalAcademicYear').value;
+            loadFromLocalStorage(academicYear);
+            document.getElementById('currentSubjectTitle').innerText = `سجل درجات مادة: ${currentSub} (${currentClass})`;
             renderTable();
-            persistLocally();
         }
 
         window.renderTable = function() {
@@ -492,9 +237,12 @@
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="p-2 border-b border-r border-slate-400 no-print"><input type="checkbox" class="student-checkbox w-4 h-4" value="${student}"></td>
+                    <td class="p-2 border-b border-r border-slate-400 no-print text-center"><input type="checkbox" class="student-checkbox w-4 h-4" value="${student}"></td>
                     <td class="p-2 border-b border-r border-slate-400 font-bold">${toArabicDigits(index + 1)}</td>
-                    <td class="p-2 border-b border-r border-slate-400 text-right"><span class="print-student-name">${student}</span><input type="text" value="${student}" class="student-name-input w-full bg-slate-50 border rounded px-2 font-bold text-sm"></td>
+                    <td class="p-2 border-b border-r border-slate-400 text-right">
+                        <span class="print-student-name">${student}</span>
+                        <input type="text" value="${student}" onchange="updateStudentName('${currentClass}', ${index}, this.value)" class="student-name-input w-full bg-slate-50 border rounded px-2 font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[0]||''}" oninput="updateGrade('${currentSub}','${student}',0,this)" class="w-full text-center bg-slate-50 border font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[1]||''}" oninput="updateGrade('${currentSub}','${student}',1,this)" class="w-full text-center bg-slate-50 border font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[2]||''}" oninput="updateGrade('${currentSub}','${student}',2,this)" class="w-full text-center bg-slate-50 border font-black"></td>
@@ -507,22 +255,129 @@
                     <td class="p-1 border-b border-r border-slate-400 font-black text-purple-900 calc-annual">${toArabicDigits(Math.round((Math.round((g[0]+g[1]+g[2])/3) + Math.round((g[4]+g[5]+g[6])/3) + g[3])/3))}</td>
                     <td class="p-1 border-b border-r border-slate-400"><input type="number" value="${g[7]||''}" oninput="updateGrade('${currentSub}','${student}',7,this)" class="w-full text-center bg-rose-50 border font-black"></td>
                     <td class="p-1 border-b border-r border-slate-400 font-black text-indigo-950 calc-final">${toArabicDigits(Math.round((Math.round((Math.round((g[0]+g[1]+g[2])/3) + Math.round((g[4]+g[5]+g[6])/3) + g[3])/3) + g[7])/2))}</td>
-                    <td class="p-1 border-b no-print"><button onclick="deleteStudent('${currentClass}','${student}')" class="text-red-500 font-bold">✕</button></td>
+                    <td class="p-1 border-b no-print text-center"><button onclick="deleteStudent('${currentClass}','${student}')" class="text-red-500 font-bold hover:text-red-700">✕</button></td>
                 `;
                 tbody.appendChild(tr);
             });
             updateFooterStats(currentSub, currentClass);
         }
 
+        window.updateGrade = function(subject, student, index, input) {
+            let val = input.value === "" ? 0 : parseFloat(input.value);
+            if(isNaN(val)) val = 0;
+            if(!schoolDb.grades[subject]) schoolDb.grades[subject] = {};
+            if(!schoolDb.grades[subject][student]) schoolDb.grades[subject][student] = [0,0,0,0,0,0,0,0];
+            schoolDb.grades[subject][student][index] = val;
+            renderTable();
+            persistLocally();
+        }
+
+        window.updateStudentName = function(className, index, newName) {
+            const oldName = classStudentsMap[className][index];
+            const cleanName = newName.trim();
+            if(!cleanName || cleanName === oldName) return;
+            classStudentsMap[className][index] = cleanName;
+            subjects.forEach(sub => {
+                if(schoolDb.grades[sub] && schoolDb.grades[sub][oldName]) {
+                    schoolDb.grades[sub][cleanName] = schoolDb.grades[sub][oldName];
+                    delete schoolDb.grades[sub][oldName];
+                }
+            });
+            persistLocally();
+            renderTable();
+        }
+
+        window.addNewStudent = function() {
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const name = prompt("أدخل اسم الطالب الجديد:");
+            if (name && name.trim() !== "") {
+                const cleanName = name.trim();
+                if (!classStudentsMap[currentClass]) classStudentsMap[currentClass] = [];
+                if (!classStudentsMap[currentClass].includes(cleanName)) {
+                    classStudentsMap[currentClass].push(cleanName);
+                    subjects.forEach(sub => {
+                        if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+                        if(!schoolDb.grades[sub][cleanName]) {
+                            schoolDb.grades[sub][cleanName] = [0,0,0,0,0,0,0,0];
+                        }
+                    });
+                }
+                persistLocally();
+                renderTable();
+            }
+        }
+
+        window.deleteStudent = function(className, studentName) {
+            if(confirm(`هل أنت متأكد من حذف الطالب ${studentName}؟`)) {
+                classStudentsMap[className] = classStudentsMap[className].filter(s => s !== studentName);
+                subjects.forEach(sub => {
+                    if(schoolDb.grades[sub]) delete schoolDb.grades[sub][studentName];
+                });
+                persistLocally();
+                renderTable();
+            }
+        }
+
+        window.toggleSelectAll = function(selectAll) {
+            document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = selectAll.checked);
+        }
+
+        window.deleteSelectedStudents = function() {
+            const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+            if (checkboxes.length === 0) return alert("يرجى تحديد طلاب للحذف.");
+            const currentClass = document.getElementById('classSectionSelect').value;
+            if (confirm("حذف الطلاب المحددين؟")) {
+                checkboxes.forEach(cb => {
+                    const studentName = cb.value;
+                    classStudentsMap[currentClass] = classStudentsMap[currentClass].filter(s => s !== studentName);
+                    subjects.forEach(sub => { if(schoolDb.grades[sub]) delete schoolDb.grades[sub][studentName]; });
+                });
+                persistLocally();
+                renderTable();
+            }
+        }
+
+        window.openImportModal = function() {
+            document.getElementById('importTextarea').value = '';
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        window.closeImportModal = function() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        window.processImportData = function() {
+            const currentClass = document.getElementById('classSectionSelect').value;
+            const text = document.getElementById('importTextarea').value;
+            if(!text.trim()) return alert("يرجى لصق الأسماء.");
+            const lines = text.split('\n');
+            let added = 0;
+            lines.forEach(line => {
+                let name = line.replace(/[\d.]+/g, '').trim();
+                if(name && !classStudentsMap[currentClass].includes(name)) {
+                    classStudentsMap[currentClass].push(name);
+                    subjects.forEach(sub => {
+                        if(!schoolDb.grades[sub]) schoolDb.grades[sub] = {};
+                        if(!schoolDb.grades[sub][name]) schoolDb.grades[sub][name] = [0,0,0,0,0,0,0,0];
+                    });
+                    added++;
+                }
+            });
+            persistLocally();
+            closeImportModal();
+            renderTable();
+            alert(`تمت إضافة ${added} طالب.`);
+        }
+
         window.updateFooterStats = function(currentSub, currentClass) {
             const tfoot = document.getElementById('tableFooter');
             const studentsInClass = classStudentsMap[currentClass] || [];
-            if (studentsInClass.length === 0) return;
+            if (studentsInClass.length === 0) { tfoot.innerHTML = ''; return; }
             let totalCount = studentsInClass.length;
             let columnStats = Array(12).fill().map(() => ({ passed: 0, failed: 0 }));
 
             studentsInClass.forEach(student => {
-                const g = (schoolDb.grades[currentSub] && schoolDb.grades[currentSub][student]) ? schoolDb.grades[currentSub][student] : [0,0,0,0,0,0,0,0];
+                const g = (schoolDb.grades[sub]) ? schoolDb.grades[sub][student] : [0,0,0,0,0,0,0,0];
                 const m1 = Math.round((g[0] + g[1] + g[2]) / 3);
                 const m2 = Math.round((g[4] + g[5] + g[6]) / 3);
                 const annual = Math.round((m1 + m2 + g[3]) / 3);
@@ -557,31 +412,68 @@
             tfoot.innerHTML = tfootHtml;
         }
 
-        let defaultStudentsClassA = [
-            "احمد حيدر إسماعيل", "اخلاص احمد منصور", "اسماء ابراهيم موزان", "امنة داود سلمان",
-            "امیر حسین موسی", "امیر مصطفى فاضل", "اميرة فاضل جاسم", "اية محمد ابراهيم",
-            "إيمان علي محمد", "أيمن سلمان داود", "إبراهيم رضا حمزة", "إسحاق ناصر جاسم",
-            "بتول سلمان شاكر", "بنين ماجد احميد", "جعفر ضياء سالم", "حسن كامل زغير",
-            "حسن محمد نعمة", "حسن مرتضی سالم", "ختام باسم فاضل", "دعاء حسن هادي",
-            "رضا حسن كريم", "رقية احمد عبد العباس", "رقية حسين كريم", "رقية محمد حمزة",
-            "رقية ميثم طالب", "زهراء مخلص محسن", "زهراء هاني طالب", "زيد جواد كاظم",
-            "زيد محمد حمزه", "زينب عباس عبد الكريم", "زينب فارس جاسم", "زينب قاسم جاسم",
-            "زينب مشتاق حسین", "سجاد حسين كريم"
-        ];
+        window.updateReportStudentsList = function() {
+            const selectedClass = document.getElementById('classSectionSelect').value;
+            const studentSelect = document.getElementById('studentSelectReport');
+            studentSelect.innerHTML = '';
+            (classStudentsMap[selectedClass] || []).forEach(student => {
+                const opt = document.createElement('option');
+                opt.value = student; opt.innerText = student;
+                studentSelect.appendChild(opt);
+            });
+            generateStudentReport();
+        }
 
-        let classStudentsMap = {
-            "الخامس الابتدائي - أ": [...defaultStudentsClassA],
-            "الخامس الابتدائي - ب": [], "السادس الابتدائي - أ": [], "السادس الابتدائي - ب": []
-        };
-        let schoolDb = { grades: {} };
-
-        window.loadSubjectData = function() {
-            const currentSub = document.getElementById('subjectSelect').value;
+        window.generateStudentReport = function() {
+            const container = document.getElementById('reportsContainer');
+            container.innerHTML = '';
+            const student = document.getElementById('studentSelectReport').value;
             const currentClass = document.getElementById('classSectionSelect').value;
-            const academicYear = document.getElementById('globalAcademicYear').value;
-            loadFromLocalStorage(academicYear);
-            document.getElementById('currentSubjectTitle').innerText = `سجل درجات مادة: ${currentSub} (${currentClass})`;
-            renderTable();
+            if(!student) return;
+
+            let tableRowsHtml = '';
+            let totalSum = 0;
+
+            subjects.forEach(sub => {
+                const g = (schoolDb.grades[sub] && schoolDb.grades[sub][student]) ? schoolDb.grades[sub][student] : [0,0,0,0,0,0,0,0];
+                const m1 = Math.round((g[0] + g[1] + g[2]) / 3);
+                const m2 = Math.round((g[4] + g[5] + g[6]) / 3);
+                const annual = Math.round((m1 + m2 + g[3]) / 3);
+                const finalGrade = Math.round((annual + g[7]) / 2);
+                totalSum += finalGrade;
+
+                tableRowsHtml += `
+                    <tr>
+                        <td class="p-1 border border-slate-600 font-bold text-right">${sub}</td>
+                        <td class="p-1 border border-slate-600">${toArabicDigits(g[0]||0)}</td>
+                        <td class="p-1 border border-slate-600">${toArabicDigits(g[1]||0)}</td>
+                        <td class="p-1 border border-slate-600">${toArabicDigits(g[2]||0)}</td>
+                        <td class="p-1 border border-slate-600 font-bold text-blue-900">${toArabicDigits(m1)}</td>
+                        <td class="p-1 border border-slate-600 bg-amber-50 font-bold">${toArabicDigits(g[3]||0)}</td>
+                        <td class="p-1 border border-slate-600">${toArabicDigits(g[4]||0)}</td>
+                        <td class="p-1 border border-slate-600">${toArabicDigits(g[5]||0)}</td>
+                        <td class="p-1 border border-slate-600">${toArabicDigits(g[6]||0)}</td>
+                        <td class="p-1 border border-slate-600 font-bold text-emerald-900">${toArabicDigits(m2)}</td>
+                        <td class="p-1 border border-slate-600 font-bold text-purple-900">${toArabicDigits(annual)}</td>
+                        <td class="p-1 border border-slate-600 bg-rose-50 font-bold">${toArabicDigits(g[7]||0)}</td>
+                        <td class="p-1 border border-slate-600 bg-indigo-50 font-bold text-indigo-950">${toArabicDigits(finalGrade)}</td>
+                    </tr>
+                `;
+            });
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = "bg-white rounded-xl p-4 border border-slate-400 space-y-4";
+            cardDiv.innerHTML = `
+                <div class="text-center border-b pb-2">
+                    <h2 class="text-base font-bold">نتيجة الطالب: ${student} - الصف: ${currentClass}</h2>
+                </div>
+                <table class="w-full text-center border-collapse text-xs border border-slate-600">
+                    <thead><tr class="bg-slate-200"><th>الدروس</th><th>ت١</th><th>ت٢</th><th>ك١</th><th>معدل1</th><th>نصف السنة</th><th>آذار</th><th>نيسان</th><th>أيار</th><th>معدل2</th><th>المعدل السنوي</th><th>الامتحان النهائي</th><th>الدرجة النهائية</th></tr></thead>
+                    <tbody>${tableRowsHtml}</tbody>
+                </table>
+                <div class="font-bold text-sm text-right">المجموع الكلي: ${toArabicDigits(totalSum)}</div>
+            `;
+            container.appendChild(cardDiv);
         }
 
         window.onload = function() { loadSubjectData(); }
